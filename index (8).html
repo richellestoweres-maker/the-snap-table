@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The SNAP Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF6EE; --card:#FFFFFF; --ink:#2B2522; --soft:#6E625A; --line:#EADFD0;
+  --tomato:#C8553D; --tomato-d:#A9432E; --green:#2F5D50; --green-l:#E3EFE9;
+  --mustard:#E9B44C; --mustard-l:#FBF0D6; --red-l:#F8E1DA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#EFE6D8;font-family:Nunito,system-ui,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select{font:inherit;color:inherit}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--cream);position:relative;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+header{padding:calc(18px + env(safe-area-inset-top)) 20px 8px;display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo svg{width:38px;height:38px}
+.logo b{font-family:Fraunces,serif;font-size:22px;letter-spacing:.2px}
+.logo b span{color:var(--tomato)}
+main{padding:6px 18px 20px}
+h1{font-family:Fraunces,serif;font-size:28px;line-height:1.15;margin:8px 0 4px}
+h2{font-family:Fraunces,serif;font-size:20px;margin:22px 0 10px}
+.sub{color:var(--soft);font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 2px 8px rgba(80,50,20,.05)}
+.row{display:flex;align-items:center;gap:12px}
+.between{justify-content:space-between}
+.label{font-weight:800;font-size:15px}
+.hint{color:var(--soft);font-size:13px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:40px;height:40px;border-radius:12px;background:var(--green-l);color:var(--green);font-size:22px;font-weight:800}
+.stepper span{min-width:30px;text-align:center;font-weight:800;font-size:20px}
+.money{display:flex;align-items:center;background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:0 10px;height:44px;width:130px}
+.money input{border:0;background:none;outline:none;width:100%;font-weight:800;font-size:18px;padding-left:4px}
+select{height:44px;border-radius:12px;border:1px solid var(--line);background:var(--cream);padding:0 10px;font-weight:700}
+.big{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border-radius:18px;padding:18px;margin:12px 0;color:#fff}
+.big.t{background:var(--tomato)} .big.g{background:var(--green)}
+.big .ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:26px;flex:none}
+.big b{display:block;font-size:18px} .big small{opacity:.9;font-size:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.stat b{font-family:Fraunces,serif;font-size:30px;color:var(--green);display:block}
+.stat span{font-size:13px;color:var(--soft);font-weight:700}
+.search{width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:#fff;padding:0 14px;font-size:16px;outline:none;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:15px}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.chip.on::before{content:"✓ "}
+.seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px;margin:12px 0}
+.seg button{flex:1;padding:10px 4px;border-radius:10px;font-weight:800;font-size:14px;color:var(--soft)}
+.seg button.on{background:var(--tomato);color:#fff}
+.meal{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0}
+.plate{width:58px;height:58px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:28px;background:var(--mustard-l);border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line)}
+.meal b{font-size:17px;display:block;margin-bottom:3px}
+.tag{display:inline-block;font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;margin-right:6px;margin-top:4px}
+.tag.ready{background:var(--green-l);color:var(--green)}
+.tag.close{background:var(--mustard-l);color:#8A6212}
+.tag.trip{background:var(--red-l);color:var(--tomato-d)}
+.tag.cost{background:var(--cream);color:var(--ink)}
+.price{margin-left:auto;text-align:right;flex:none}
+.price b{font-family:Fraunces,serif;font-size:20px;color:var(--green)}
+.price span{display:block;font-size:12px;color:var(--soft);font-weight:700}
+.empty{text-align:center;padding:30px 10px;color:var(--soft)}
+.empty b{display:block;font-family:Fraunces,serif;color:var(--ink);font-size:20px;margin-bottom:6px}
+.btn{display:block;width:100%;height:52px;border-radius:14px;font-weight:800;font-size:16px;margin-top:12px}
+.btn.t{background:var(--tomato);color:#fff} .btn.g{background:var(--green);color:#fff}
+.btn.o{background:#fff;border:1.5px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--green);padding:6px 0}
+.ing{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.ing:last-child{border-bottom:0}
+.dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;flex:none}
+.dot.have{background:var(--green-l);color:var(--green)}
+.dot.need{background:var(--red-l);color:var(--tomato-d)}
+.dot.basic{background:var(--cream);color:var(--soft)}
+.ing .nm{flex:1;font-weight:700}
+.ing .nm small{display:block;font-weight:600;color:var(--soft);font-size:13px}
+.ing .pr{font-weight:800}
+ol.steps{padding-left:22px}
+ol.steps li{margin:10px 0;line-height:1.5}
+.compare{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.store{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 4px;text-align:center}
+.store.best{border-color:var(--green);background:var(--green-l)}
+.store small{display:block;font-weight:800;font-size:12px;color:var(--soft)}
+.store b{font-size:17px}
+.store em{display:block;font-style:normal;font-size:11px;font-weight:800;color:var(--green);margin-top:2px}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.box{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);flex:none;display:grid;place-items:center;color:#fff;font-weight:800}
+.li.done .box{background:var(--green);border-color:var(--green)}
+.li.done .nm{text-decoration:line-through;color:var(--soft)}
+.li .nm{flex:1;font-weight:700}
+.li .nm small{display:block;font-weight:600;color:var(--soft);font-size:13px}
+.budget{border-radius:14px;padding:14px;font-weight:800;margin-top:12px}
+.budget.ok{background:var(--green-l);color:var(--green)}
+.budget.over{background:var(--red-l);color:var(--tomato-d)}
+.link{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit}
+.link .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;flex:none;background:var(--mustard-l)}
+.link b{display:block;font-size:16px}
+.link .go{margin-left:auto;color:var(--soft);font-size:22px}
+.note{background:var(--mustard-l);border-radius:16px;padding:14px;font-size:14px;line-height:1.45}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:800;color:var(--soft);padding:4px 0;position:relative}
+nav button .i{font-size:22px;line-height:1}
+nav button.on{color:var(--tomato)}
+nav .badge{position:absolute;top:0;right:calc(50% - 22px);background:var(--tomato);color:#fff;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 4px}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:700;opacity:0;transition:.25s;pointer-events:none;z-index:9;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{font-size:12px;color:var(--soft);text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#C8553D"/><circle cx="20" cy="20" r="12.5" fill="#FBF6EE"/><circle cx="20" cy="20" r="8" fill="#E9B44C" opacity=".55"/><path d="M27 9v22M25 9v6M29 9v6M25 15h4" stroke="#2F5D50" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+      <b>The <span>SNAP</span> Table</b>
+    </div>
+  </header>
+  <main id="screen"></main>
+  <nav id="nav"></nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- DATA ---------- */
+const STORES = [
+  {id:"aldi", name:"Aldi"},
+  {id:"kroger", name:"Kroger"},
+  {id:"heb", name:"H-E-B"},
+  {id:"walmart", name:"Walmart"}
+];
+
+/* price order: aldi, kroger, heb, walmart. Estimated shelf prices, Houston area, late 2026 */
+const ITEMS = [
+  ["rice","Rice","2 lb bag","Grains and bread",[1.85,2.29,1.98,1.94]],
+  ["pasta","Pasta","1 lb box","Grains and bread",[0.95,1.29,1.05,1.12]],
+  ["tortillas","Flour tortillas","10 count","Grains and bread",[1.79,2.49,1.89,1.98]],
+  ["bread","Sandwich bread","1 loaf","Grains and bread",[1.39,1.99,1.69,1.48]],
+  ["oats","Oats","42 oz","Grains and bread",[2.89,3.99,3.25,3.12]],
+
+  ["blackbeans","Black beans","15 oz can","Cans and dry goods",[0.79,1.09,0.85,0.88]],
+  ["pinto","Dry pinto beans","2 lb bag","Cans and dry goods",[2.19,2.79,2.29,2.38]],
+  ["lentils","Lentils","1 lb bag","Cans and dry goods",[1.49,1.89,1.59,1.62]],
+  ["dicedtom","Diced tomatoes","14 oz can","Cans and dry goods",[0.75,1.09,0.82,0.88]],
+  ["tomsauce","Tomato sauce","8 oz can","Cans and dry goods",[0.55,0.89,0.59,0.62]],
+  ["pastasauce","Pasta sauce","24 oz jar","Cans and dry goods",[1.49,2.29,1.79,1.68]],
+  ["broth","Chicken broth","32 oz box","Cans and dry goods",[1.49,1.99,1.59,1.62]],
+  ["tuna","Canned tuna","5 oz can","Cans and dry goods",[0.99,1.29,1.05,1.08]],
+  ["corn","Canned corn","15 oz can","Cans and dry goods",[0.69,0.99,0.75,0.78]],
+  ["pb","Peanut butter","16 oz jar","Cans and dry goods",[1.89,2.49,1.99,2.12]],
+  ["creamsoup","Cream of chicken soup","10 oz can","Cans and dry goods",[0.89,1.39,0.95,0.98]],
+
+  ["eggs","Eggs","1 dozen","Meat and eggs",[2.39,3.29,2.69,2.79]],
+  ["chicken","Chicken thighs","about 3 lb","Meat and eggs",[5.49,6.99,5.89,5.94]],
+  ["beef","Ground beef","1 lb","Meat and eggs",[4.99,5.99,5.29,5.48]],
+  ["turkey","Ground turkey","1 lb","Meat and eggs",[3.49,4.29,3.69,3.74]],
+  ["sausage","Smoked sausage","13 oz","Meat and eggs",[2.49,3.29,2.79,2.88]],
+
+  ["milk","Milk","1 gallon","Dairy",[2.89,3.49,2.99,3.12]],
+  ["cheese","Shredded cheese","8 oz bag","Dairy",[2.09,2.79,2.29,2.32]],
+  ["butter","Butter","1 lb","Dairy",[3.69,4.79,3.99,4.12]],
+
+  ["onion","Onions","3 lb bag","Produce",[2.29,2.99,2.49,2.58]],
+  ["potatoes","Potatoes","5 lb bag","Produce",[3.29,4.49,3.49,3.68]],
+  ["carrots","Carrots","2 lb bag","Produce",[1.49,1.99,1.59,1.62]],
+  ["bananas","Bananas","1 bunch","Produce",[1.20,1.45,1.25,1.30]],
+  ["cabbage","Cabbage","1 head","Produce",[1.49,1.99,1.29,1.58]],
+  ["peppers","Bell peppers","3 pack","Produce",[2.49,3.49,2.79,2.88]],
+  ["mixedveg","Frozen mixed vegetables","12 oz bag","Produce",[0.99,1.29,1.05,1.08]],
+  ["broccoli","Frozen broccoli","12 oz bag","Produce",[1.09,1.49,1.15,1.18]],
+
+  ["oil","Cooking oil","basic","Basics",[2.79,3.49,2.99,2.98],true],
+  ["salt","Salt and pepper","basic","Basics",[1.50,2.00,1.60,1.60],true],
+  ["spices","Chili powder and cumin","basic","Basics",[1.80,2.60,1.90,1.90],true],
+  ["garlicp","Garlic powder","basic","Basics",[1.10,1.79,1.20,1.24],true]
+].map(([id,name,pkg,cat,p,basic])=>({id,name,pkg,cat,basic:!!basic,price:{aldi:p[0],kroger:p[1],heb:p[2],walmart:p[3]}}));
+const ITEM = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const CATS = ["Grains and bread","Cans and dry goods","Meat and eggs","Dairy","Produce","Basics"];
+
+const PANTRY_BOX = ["rice","pasta","blackbeans","pinto","dicedtom","tomsauce","tuna","corn","pb","oats","pastasauce","creamsoup"];
+
+/* use = how much of one package the recipe uses for 4 servings */
+const RECIPES = [
+  {id:"beanpasta",name:"Pasta with beans and red sauce",e:"🍝",time:20,ing:{pasta:1,pastasauce:1,blackbeans:1,garlicp:0,salt:0},
+   steps:["Boil pasta in salted water.","Warm sauce with rinsed beans and garlic powder.","Toss together."]},
+  {id:"tunacorn",name:"Tuna and corn rice bowl",e:"🐟",time:25,ing:{rice:.5,tuna:2,corn:1,oil:0,salt:0},
+   steps:["Cook rice.","Warm drained corn in a little oil, then stir in tuna.","Spoon over rice and season with salt and pepper."]},
+  {id:"tomrice",name:"Tomato rice and beans",e:"🍅",time:30,ing:{rice:.5,dicedtom:1,tomsauce:1,blackbeans:2,spices:0,oil:0,salt:0},
+   steps:["Toast rice in oil for 2 minutes.","Add tomatoes, tomato sauce, cumin and 1.5 cups water.","Cover and simmer 20 minutes.","Stir in warm beans."]},
+  {id:"creamytuna",name:"Creamy tuna rice",e:"🥫",time:25,ing:{rice:.5,creamsoup:1,tuna:2,corn:1,salt:0},
+   steps:["Cook rice.","Stir in soup, tuna and drained corn with a splash of water.","Heat through and season."]},
+  {id:"pboats",name:"Peanut butter oatmeal",e:"🥜",time:10,ing:{oats:.15,pb:.15},
+   steps:["Cook oats with water.","Stir in a spoon of peanut butter per bowl."]},
+  {id:"bbtacos",name:"Black bean tacos",e:"🌮",time:20,ing:{tortillas:.8,blackbeans:2,onion:.15,cheese:.5,spices:0,oil:0},
+   steps:["Cook diced onion in a little oil until soft.","Add drained beans with chili powder, cumin and a splash of water. Mash some with a fork.","Warm tortillas in a dry pan.","Fill with beans and cheese."]},
+  {id:"ricebeans",name:"Rice, beans and a fried egg",e:"🍳",time:25,ing:{rice:.5,blackbeans:2,eggs:.33,onion:.1,spices:0,oil:0},
+   steps:["Cook rice.","Warm beans with onion, cumin and salt.","Fry one egg per person.","Serve beans over rice with the egg on top."]},
+  {id:"chickrice",name:"One pan chicken and rice",e:"🍗",time:40,ing:{chicken:.6,rice:.5,broth:.5,mixedveg:1,onion:.15,garlicp:0,oil:0,salt:0},
+   steps:["Season chicken and brown it in oil, then set aside.","Cook onion, add rice and stir for a minute.","Pour in broth, set chicken on top, cover and simmer 20 minutes.","Stir in frozen vegetables and cook 5 more minutes."]},
+  {id:"spag",name:"Spaghetti with meat sauce",e:"🍝",time:30,ing:{pasta:1,beef:1,pastasauce:1,onion:.15,garlicp:0,salt:0},
+   steps:["Boil pasta in salted water.","Brown beef with onion and drain.","Add sauce and garlic powder, simmer 10 minutes.","Toss with pasta."]},
+  {id:"chili",name:"Turkey and bean chili",e:"🥣",time:40,ing:{turkey:1,blackbeans:1,dicedtom:1,tomsauce:1,onion:.2,peppers:.33,spices:0,oil:0},
+   steps:["Brown turkey with onion and pepper.","Add beans, tomatoes, sauce, chili powder and cumin.","Simmer 25 minutes, stirring now and then."]},
+  {id:"lentil",name:"Hearty lentil soup",e:"🍲",time:45,ing:{lentils:.5,carrots:.25,onion:.2,dicedtom:1,broth:1,potatoes:.15,spices:0,oil:0,salt:0},
+   steps:["Cook chopped onion and carrot in oil.","Add rinsed lentils, diced potato, tomatoes, broth and cumin.","Simmer 30 minutes until lentils are soft. Salt to taste."]},
+  {id:"friedrice",name:"Egg fried rice",e:"🍚",time:20,ing:{rice:.5,eggs:.5,mixedveg:1,oil:0,salt:0,garlicp:0},
+   steps:["Cook rice and let it cool if you can. Leftover rice is best.","Scramble eggs in oil and set aside.","Fry frozen vegetables, add rice and garlic powder.","Stir the eggs back in. Season with salt."]},
+  {id:"bfasttacos",name:"Potato and egg breakfast tacos",e:"🥔",time:25,ing:{eggs:.5,potatoes:.2,tortillas:.8,cheese:.25,oil:0,salt:0},
+   steps:["Dice potatoes small and fry in oil until crisp.","Pour in beaten eggs and scramble together.","Fill warm tortillas and top with cheese."]},
+  {id:"sausagecab",name:"Sausage, potato and cabbage skillet",e:"🥘",time:35,ing:{sausage:1,potatoes:.3,cabbage:.5,onion:.15,oil:0,salt:0},
+   steps:["Slice sausage and brown it.","Add diced potatoes and onion, cover and cook 12 minutes.","Add sliced cabbage and cook until tender."]},
+  {id:"tunapasta",name:"Cheesy tuna pasta",e:"🧀",time:20,ing:{pasta:1,tuna:2,mixedveg:1,cheese:.25,butter:.06,salt:0},
+   steps:["Boil pasta, adding frozen vegetables for the last 3 minutes.","Drain, keeping a little pasta water.","Stir in butter, cheese, tuna and a splash of the water."]},
+  {id:"potatobar",name:"Baked potato bar",e:"🥦",time:50,ing:{potatoes:.4,broccoli:1,cheese:.5,butter:.06,salt:0},
+   steps:["Poke potatoes with a fork and bake at 400°F for 45 minutes, or microwave 8 to 10 minutes.","Cook broccoli.","Split potatoes and top with butter, broccoli and cheese."]},
+  {id:"noodlesoup",name:"Chicken noodle soup",e:"🍜",time:45,ing:{chicken:.4,pasta:.5,carrots:.25,onion:.15,broth:2,salt:0,oil:0},
+   steps:["Cook onion and carrot in oil.","Add broth and chicken, simmer 20 minutes.","Take out chicken, shred it and return it.","Add pasta and cook until tender."]},
+  {id:"charro",name:"Pinto beans with sausage",e:"🫘",time:120,ing:{pinto:.5,sausage:.5,onion:.2,dicedtom:1,spices:0,salt:0},
+   steps:["Soak beans overnight, or bring to a boil and let sit 1 hour.","Drain, cover with fresh water, add onion and simmer 1 to 1.5 hours.","Add sliced sausage, tomatoes and cumin. Simmer 20 minutes more."]},
+  {id:"oatmeal",name:"Peanut butter banana oatmeal",e:"🍌",time:10,ing:{oats:.15,milk:.12,bananas:.5,pb:.15},
+   steps:["Cook oats with milk or water.","Stir in peanut butter.","Top with sliced banana."]},
+  {id:"quesadilla",name:"Chicken quesadillas",e:"🫓",time:30,ing:{chicken:.4,tortillas:.8,cheese:.75,peppers:.33,spices:0,oil:0},
+   steps:["Cook chicken with chili powder, then chop it.","Cook sliced peppers.","Fill tortillas with cheese, chicken and peppers.","Toast in a pan until golden on both sides."]},
+  {id:"hash",name:"Beef and potato hash",e:"🍽️",time:30,ing:{beef:1,potatoes:.4,onion:.15,eggs:.33,salt:0,oil:0},
+   steps:["Fry diced potatoes in oil until browned.","Add beef and onion and cook through.","Make little wells and crack in eggs. Cover until set."]},
+  {id:"casserole",name:"Chicken, broccoli and rice bake",e:"🥗",time:50,ing:{chicken:.5,rice:.5,creamsoup:1,broccoli:1,cheese:.25,salt:0},
+   steps:["Cook rice and chop cooked chicken.","Mix rice, chicken, soup, broccoli and half the cheese.","Top with remaining cheese and bake at 375°F for 25 minutes."]},
+  {id:"grilledcheese",name:"Grilled cheese and tomato soup",e:"🥪",time:25,ing:{bread:.6,cheese:.5,butter:.06,dicedtom:2,broth:.5,milk:.1,salt:0},
+   steps:["Simmer tomatoes and broth 10 minutes, then mash or blend. Stir in milk.","Butter bread, add cheese and toast in a pan until golden."]}
+];
+
+/* ---------- STATE ---------- */
+const KEY = "snaptable.v1";
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null};
+try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, q:""}); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab})); }catch(e){} }
+
+/* ---------- HELPERS ---------- */
+const $ = s=>document.querySelector(s);
+const money = n=>"$"+n.toFixed(2);
+const has = id=>S.pantry.includes(id);
+const storeName = id=>STORES.find(s=>s.id===id).name;
+function scale(r){ return S.family/4; }
+function mealInfo(r){
+  const k = scale(r); let cost=0; const need=[];
+  for(const [id,use] of Object.entries(r.ing)){
+    const it = ITEM[id];
+    if(it.basic) continue;
+    cost += it.price[S.store]*use*k;
+    if(!has(id)) need.push(id);
+  }
+  const status = need.length===0 ? "ready" : need.length<=2 ? "close" : "trip";
+  const buy = need.reduce((t,id)=>t+ITEM[id].price[S.store]*pkgCount(r,id),0);
+  return {cost, perPlate:cost/S.family, need, status, buy};
+}
+function pkgCount(r,id){ return Math.max(1, Math.ceil(r.ing[id]*scale(r)-0.001)); }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
+function listCount(){ return Object.keys(S.list).length; }
+function go(tab){ S.tab=tab; S.meal=null; save(); render(true); }
+
+/* ---------- SCREENS ---------- */
+function Home(){
+  const infos = RECIPES.map(mealInfo);
+  const ready = infos.filter(i=>i.status==="ready").length;
+  const hour = new Date().getHours();
+  const hi = hour<11 ? "What's for breakfast?" : hour<16 ? "What's for lunch?" : "What's for dinner?";
+  return `
+  <h1>${hi}</h1>
+  <p class="sub">Good meals from what you have, for less.</p>
+
+  <div class="card">
+    <div class="row between"><div class="label">People eating</div>
+      <div class="stepper"><button data-act="fam" data-d="-1" aria-label="Fewer">−</button><span>${S.family}</span><button data-act="fam" data-d="1" aria-label="More">+</button></div>
+    </div>
+    <div class="row between" style="margin-top:14px"><div><div class="label">SNAP left this month</div><div class="hint">Optional</div></div>
+      <label class="money">$<input id="budget" inputmode="decimal" placeholder="0.00" value="${S.budget}"></label>
+    </div>
+    <div class="row between" style="margin-top:14px"><div class="label">Where I shop</div>
+      <select id="store">${STORES.map(s=>`<option value="${s.id}" ${s.id===S.store?"selected":""}>${s.name}</option>`).join("")}</select>
+    </div>
+  </div>
+
+  <button class="big t" data-act="goto" data-tab="meals"><span class="ic">🍲</span><span><b>Cook from my pantry</b><small>${ready} meal${ready===1?"":"s"} ready with what you have</small></span></button>
+  <button class="big g" data-act="box"><span class="ic">📦</span><span><b>Got a pantry box?</b><small>Add the usual food bank items in one tap</small></span></button>
+
+  <div class="stats">
+    <div class="stat"><b>${S.pantry.length}</b><span>in my pantry</span></div>
+    <div class="stat"><b>${listCount()}</b><span>on my list</span></div>
+  </div>`;
+}
+
+function Pantry(){
+  const q = S.q.trim().toLowerCase();
+  const groups = CATS.map(cat=>{
+    const items = ITEMS.filter(i=>i.cat===cat && (!q || i.name.toLowerCase().includes(q)));
+    if(!items.length) return "";
+    return `<h2>${cat}</h2>${cat==="Basics"?`<p class="hint" style="margin:-4px 0 10px">Most meals assume you have these.</p>`:""}
+      <div class="chips">${items.map(i=>`<button class="chip ${has(i.id)?"on":""}" data-act="toggle" data-id="${i.id}">${i.name}</button>`).join("")}</div>`;
+  }).join("");
+  return `
+  <h1>My pantry</h1>
+  <p class="sub">Tap everything you have.</p>
+  <input class="search" id="q" placeholder="Search foods" value="${S.q.replace(/"/g,"&quot;")}">
+  ${groups || `<div class="empty"><b>No match</b>Try another word.</div>`}
+  ${S.pantry.length?`<button class="btn o" data-act="clearpantry" style="margin-top:24px">Clear my pantry</button>`:""}`;
+}
+
+function Meals(){
+  let rows = RECIPES.map(r=>({r,i:mealInfo(r)}));
+  const counts = {ready:0,close:0};
+  rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
+  if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
+  const order = {ready:0,close:1,trip:2};
+  rows.sort((a,b)=>order[a.i.status]-order[b.i.status] || a.i.perPlate-b.i.perPlate);
+  const tagFor = i=> i.status==="ready" ? `<span class="tag ready">Ready now</span>`
+    : i.status==="close" ? `<span class="tag close">Need ${i.need.length}</span>`
+    : `<span class="tag trip">Need ${i.need.length}</span>`;
+  const empty = S.filter==="ready"
+    ? `<div class="empty"><b>Nothing ready yet</b>Add what you have to your pantry, or check meals that need 1 or 2 things.<button class="btn g" data-act="goto" data-tab="pantry">Add to my pantry</button></div>`
+    : `<div class="empty"><b>Nothing here yet</b>Try another tab.</div>`;
+  return `
+  <h1>Meals</h1>
+  <p class="sub">For ${S.family}, priced at ${storeName(S.store)}.</p>
+  <div class="seg">
+    <button class="${S.filter==="ready"?"on":""}" data-act="filter" data-f="ready">Ready (${counts.ready})</button>
+    <button class="${S.filter==="close"?"on":""}" data-act="filter" data-f="close">Need 1 or 2 (${counts.close})</button>
+    <button class="${S.filter==="all"?"on":""}" data-act="filter" data-f="all">All</button>
+  </div>
+  ${rows.length ? rows.map(({r,i})=>`
+    <button class="meal" data-act="open" data-id="${r.id}">
+      <span class="plate">${r.e}</span>
+      <span><b>${r.name}</b>${tagFor(i)}<span class="tag cost">${r.time} min</span></span>
+      <span class="price"><b>${money(i.perPlate)}</b><span>a plate</span></span>
+    </button>`).join("") : empty}`;
+}
+
+function MealDetail(){
+  const r = RECIPES.find(x=>x.id===S.meal); const i = mealInfo(r);
+  const rows = Object.keys(r.ing).map(id=>{
+    const it = ITEM[id];
+    if(it.basic) return `<div class="ing"><span class="dot basic">•</span><span class="nm">${it.name}<small>Basic</small></span></div>`;
+    if(has(id)) return `<div class="ing"><span class="dot have">✓</span><span class="nm">${it.name}<small>You have this</small></span></div>`;
+    const n = pkgCount(r,id);
+    return `<div class="ing"><span class="dot need">+</span><span class="nm">${it.name}<small>${n>1?n+" × ":""}${it.pkg}</small></span><span class="pr">${money(it.price[S.store]*n)}</span></div>`;
+  }).join("");
+  const allOnList = i.need.length && i.need.every(id=>S.list[id]);
+  return `
+  <button class="back" data-act="back">‹ Meals</button>
+  <div class="row" style="margin-top:6px"><span class="plate" style="width:64px;height:64px;font-size:32px">${r.e}</span>
+    <div><h1 style="margin:0">${r.name}</h1><p class="sub">Feeds ${S.family} · ${r.time} min</p></div></div>
+
+  <div class="stats" style="margin-top:14px">
+    <div class="stat"><b>${money(i.perPlate)}</b><span>a plate</span></div>
+    <div class="stat"><b>${i.need.length?money(i.buy):"$0"}</b><span>to buy at ${storeName(S.store)}</span></div>
+  </div>
+
+  <h2>What you need</h2>
+  <div class="card" style="padding:4px 16px">${rows}</div>
+  ${i.need.length ? `<button class="btn t" data-act="addlist" ${allOnList?"disabled style='opacity:.6'":""}>${allOnList?"On your list":"Add "+i.need.length+" to my list"}</button>` : ""}
+
+  <h2>How to make it</h2>
+  <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
+  <button class="btn g" data-act="made">I made this</button>`;
+}
+
+function List(){
+  const ids = Object.keys(S.list);
+  if(!ids.length) return `<h1>My list</h1><div class="empty"><b>Your list is empty</b>Open a meal and add what you need.<button class="btn t" data-act="goto" data-tab="meals">See meals</button></div>`;
+  const totals = STORES.map(s=>({s, t: ids.reduce((a,id)=>a+ITEM[id].price[s.id]*S.list[id],0)}));
+  const best = totals.reduce((a,b)=>b.t<a.t?b:a);
+  const mine = totals.find(x=>x.s.id===S.store).t;
+  const b = parseFloat(S.budget);
+  const budgetLine = isNaN(b) ? "" :
+    (b>=mine ? `<div class="budget ok">You'll have ${money(b-mine)} left this month.</div>` : `<div class="budget over">That's ${money(mine-b)} over what you have left.</div>`);
+  const items = ids.map(id=>{ const it=ITEM[id]; const n=S.list[id]; const done=S.done.includes(id);
+    return `<div class="li ${done?"done":""}"><button class="box" data-act="tick" data-id="${id}" aria-label="Got it">${done?"✓":""}</button>
+      <span class="nm">${it.name}<small>${n>1?n+" × ":""}${it.pkg}</small></span>
+      <b>${money(it.price[S.store]*n)}</b></div>`; }).join("");
+  return `
+  <h1>My list</h1>
+  <p class="sub">${ids.length} item${ids.length===1?"":"s"}, priced at ${storeName(S.store)}.</p>
+  <h2>Compare stores</h2>
+  <div class="compare">${totals.map(x=>`<button class="store ${x===best?"best":""}" data-act="setstore" data-s="${x.s.id}"><small>${x.s.name}</small><b>${money(x.t)}</b>${x===best?"<em>Cheapest</em>":""}</button>`).join("")}</div>
+  ${budgetLine}
+  <div class="card" style="padding:4px 16px;margin-top:16px">${items}</div>
+  <button class="btn g" data-act="gotit">Put checked items in my pantry</button>
+  <button class="btn o" data-act="clearlist">Clear list</button>
+  <p class="foot">Prices are estimates.</p>`;
+}
+
+function Find(){
+  const links = [
+    ["🛒","Stores that take SNAP","USDA store finder","https://www.fns.usda.gov/snap/retailer-locator"],
+    ["🥫","Food banks near me","Feeding America","https://www.feedingamerica.org/find-your-local-foodbank"],
+    ["🏠","Pantries and free meals","Search by ZIP code","https://www.findhelp.org/"],
+    ["📞","Call or text 211","Texas help line for food and more","https://www.211texas.org/"],
+    ["💳","My Lone Star Card","Your Texas Benefits","https://www.yourtexasbenefits.com/"]
+  ];
+  return `
+  <h1>Find food</h1>
+  <p class="sub">Stores, pantries and help near you.</p>
+  ${links.map(([ic,t,s,u])=>`<a class="card link" href="${u}" target="_blank" rel="noopener"><span class="ic">${ic}</span><span><b>${t}</b><span class="hint">${s}</span></span><span class="go">›</span></a>`).join("")}
+  <div class="note" style="margin-top:16px"><b>Texas SNAP rule:</b> candy and sweetened drinks can't be bought with SNAP. Every meal in this app uses SNAP eligible food.</div>`;
+}
+
+/* ---------- RENDER ---------- */
+const TABS = [["home","🏠","Home"],["pantry","🥫","Pantry"],["meals","🍲","Meals"],["list","📝","List"],["find","📍","Find"]];
+function render(top){
+  const y = window.scrollY;
+  $("#screen").innerHTML = S.meal ? MealDetail() : ({home:Home,pantry:Pantry,meals:Meals,list:List,find:Find}[S.tab])();
+  $("#nav").innerHTML = TABS.map(([id,i,l])=>`<button class="${S.tab===id?"on":""}" data-act="goto" data-tab="${id}"><span class="i">${i}</span>${l}${id==="list"&&listCount()?`<span class="badge">${listCount()}</span>`:""}</button>`).join("");
+  window.scrollTo(0, top?0:y);
+  const q=$("#q"); if(q){ q.oninput=e=>{ S.q=e.target.value; const pos=e.target.selectionStart; render(); const n=$("#q"); n.focus(); n.setSelectionRange(pos,pos); }; }
+  const bud=$("#budget"); if(bud){ bud.oninput=e=>{ S.budget=e.target.value.replace(/[^0-9.]/g,""); save(); }; }
+  const st=$("#store"); if(st){ st.onchange=e=>{ S.store=e.target.value; save(); render(); }; }
+}
+
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const a = b.dataset.act;
+  if(a==="goto") return go(b.dataset.tab);
+  if(a==="fam"){ S.family=Math.min(12,Math.max(1,S.family+ +b.dataset.d)); }
+  if(a==="toggle"){ const id=b.dataset.id; S.pantry = has(id)?S.pantry.filter(x=>x!==id):[...S.pantry,id]; }
+  if(a==="box"){ let n=0; PANTRY_BOX.forEach(id=>{ if(!has(id)){S.pantry.push(id);n++;} }); toast(n?`Added ${n} pantry box items`:"Already in your pantry"); S.tab="pantry"; save(); return render(true); }
+  if(a==="clearpantry"){ S.pantry=[]; toast("Pantry cleared"); }
+  if(a==="filter"){ S.filter=b.dataset.f; }
+  if(a==="open"){ S.meal=b.dataset.id; save(); return render(true); }
+  if(a==="back"){ S.meal=null; return render(true); }
+  if(a==="addlist"){ const r=RECIPES.find(x=>x.id===S.meal); mealInfo(r).need.forEach(id=>{ S.list[id]=Math.max(S.list[id]||0, pkgCount(r,id)); }); toast("Added to your list"); }
+  if(a==="made"){ const r=RECIPES.find(x=>x.id===S.meal); const used=Object.keys(r.ing).filter(id=>!ITEM[id].basic && has(id) && r.ing[id]*scale(r)>=1); S.pantry=S.pantry.filter(id=>!used.includes(id)); toast(used.length?"Nice! Pantry updated":"Nice work!"); S.meal=null; save(); return render(true); }
+  if(a==="tick"){ const id=b.dataset.id; S.done = S.done.includes(id)?S.done.filter(x=>x!==id):[...S.done,id]; }
+  if(a==="gotit"){ if(!S.done.length) return toast("Check off what you bought"); S.done.forEach(id=>{ if(!has(id)) S.pantry.push(id); delete S.list[id]; }); toast(`${S.done.length} added to your pantry`); S.done=[]; }
+  if(a==="clearlist"){ S.list={}; S.done=[]; toast("List cleared"); }
+  if(a==="setstore"){ S.store=b.dataset.s; toast("Now pricing at "+storeName(S.store)); }
+  save(); render();
+});
+
+render(true);
+</script>
+</body>
+</html>
