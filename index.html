@@ -113,6 +113,10 @@ nav .badge{position:absolute;top:0;right:calc(50% - 22px);background:var(--tomat
 .meal .desc{display:block;font-size:13px;color:var(--soft);margin-bottom:2px;line-height:1.3}
 .ing small.alt{color:var(--green)}
 h2 .count{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:11px;background:var(--green);color:#fff;font-family:Nunito,sans-serif;font-size:12px;padding:0 6px;vertical-align:middle}
+.big.m{background:var(--mustard);color:var(--ink)}
+.big.m .ic{background:rgba(255,255,255,.35)}
+.stat.wide{grid-column:1/-1}
+nav button{font-size:11px}
 </style>
 </head>
 <body>
@@ -138,19 +142,22 @@ const ITEMS = ITEMS_RAW.map(a=>{
   return {id:a[0], name:a[1], pkg:a[2], cat:a[3], basic:!!a[5], price};
 });
 const ITEM = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
-RECIPES.forEach(r=>{
-  r.groups = r.ing.split(";").map(g=>g.trim()).filter(Boolean)
-    .map(g=>g.split("|").map(o=>{ const t=o.trim().split(/\s+/); return {id:t[0], use:parseFloat(t[1]||"0")}; }).filter(o=>ITEM[o.id]))
-    .filter(g=>g.length);
-});
+const ALLERGY_OF = {};
+Object.entries(ALLERGENS).forEach(([a,ids])=>ids.forEach(id=>{ (ALLERGY_OF[id]=ALLERGY_OF[id]||[]).push(a); }));
+const ALLERGY_LIST = [["peanut","Peanuts"],["treenut","Tree nuts"],["milk","Milk"],["egg","Eggs"],["wheat","Wheat"],["soy","Soy"],["fish","Fish"],["shellfish","Shellfish"],["sesame","Sesame"]];
+const parseIng = s=>s.split(";").map(g=>g.trim()).filter(Boolean)
+  .map(g=>g.split("|").map(o=>{ const t=o.trim().split(/\s+/); return {id:t[0], use:parseFloat(t[1]||"0")}; }).filter(o=>ITEM[o.id]))
+  .filter(g=>g.length);
+RECIPES.forEach(r=>{ r.groups = parseIng(r.ing); });
+SCRATCH.forEach(r=>{ r.groups = parseIng(r.ing); });
 
 /* ---------- STATE ---------- */
 const KEY = "snaptable.v1";
-let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null};
-try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, q:""}); }catch(e){}
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0};
+try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:""}); }catch(e){}
 S.pantry = S.pantry.filter(id=>ITEM[id]);
 Object.keys(S.list).forEach(id=>{ if(!ITEM[id]) delete S.list[id]; });
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved})); }catch(e){} }
 
 /* ---------- HELPERS ---------- */
 const $ = s=>document.querySelector(s);
@@ -158,10 +165,13 @@ const money = n=>"$"+n.toFixed(2);
 const has = id=>S.pantry.includes(id);
 const storeName = id=>STORES.find(s=>s.id===id).name;
 const k = ()=>S.family/4;
-const isBasic = g=>ITEM[g[0].id].basic;
-const haveG = g=>g.some(o=>has(o.id));
-const pick = g=>g.find(o=>has(o.id))||g[0];
-const pkgs = o=>Math.max(1, Math.ceil(o.use*k()-0.001));
+const safe = id=>!(ALLERGY_OF[id]||[]).some(a=>S.allergies.includes(a));
+const opts = g=>g.filter(o=>safe(o.id));
+const isBasic = g=>ITEM[opts(g)[0].id].basic;
+const haveG = g=>opts(g).some(o=>has(o.id));
+const pick = g=>opts(g).find(o=>has(o.id))||opts(g)[0];
+const okMeal = r=>r.groups.every(g=>opts(g).length);
+const pkgs = (o,s)=>Math.max(1, Math.ceil(o.use*s-0.001));
 function mealInfo(r){
   let cost=0; const need=[];
   r.groups.forEach(g=>{
@@ -171,23 +181,53 @@ function mealInfo(r){
     if(!haveG(g)) need.push(g);
   });
   const status = need.length===0 ? "ready" : need.length<=2 ? "close" : "trip";
-  const buy = need.reduce((t,g)=>t+ITEM[g[0].id].price[S.store]*pkgs(g[0]),0);
+  const buy = need.reduce((t,g)=>t+ITEM[pick(g).id].price[S.store]*pkgs(pick(g),k()),0);
   return {cost, perPlate:cost/S.family, need, status, buy};
+}
+function scratchInfo(r){
+  let cost=0; const need=[];
+  r.groups.forEach(g=>{
+    const o = pick(g); const it = ITEM[o.id];
+    if(it.basic){ cost += 0.05; return; }
+    cost += it.price[S.store]*o.use;
+    if(!haveG(g)) need.push(g);
+  });
+  const store = ITEM[r.makes].price[S.store]*(r.yield||1);
+  const buy = need.reduce((t,g)=>t+ITEM[pick(g).id].price[S.store]*pkgs(pick(g),1),0);
+  return {cost, store, save:Math.max(0,store-cost), need, buy};
+}
+function ingRows(r,s){
+  return r.groups.map(g=>{
+    const list = opts(g); const it = ITEM[list[0].id];
+    if(it.basic) return `<div class="ing"><span class="dot basic">•</span><span class="nm">${it.name}<small>Basic</small></span></div>`;
+    if(haveG(g)){ const o=pick(g); return `<div class="ing"><span class="dot have">✓</span><span class="nm">${ITEM[o.id].name}<small>You have this</small></span></div>`; }
+    const n = pkgs(list[0],s);
+    const alt = list.slice(1).map(o=>ITEM[o.id].name.toLowerCase()).join(" or ");
+    return `<div class="ing"><span class="dot need">+</span><span class="nm">${it.name}<small>${n>1?n+" × ":""}${it.pkg}</small>${alt?`<small class="alt">Or use ${alt}</small>`:""}</span><span class="pr">${money(it.price[S.store]*n)}</span></div>`;
+  }).join("");
 }
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
 function listCount(){ return Object.keys(S.list).length; }
-function go(tab){ S.tab=tab; S.meal=null; save(); render(true); }
+function go(tab){ S.tab=tab; S.meal=null; S.scratch=null; save(); render(true); }
+const allergyNames = ()=>ALLERGY_LIST.filter(([id])=>S.allergies.includes(id)).map(([,l])=>l).join(", ");
 
 /* ---------- SCREENS ---------- */
 function Home(){
-  const infos = RECIPES.map(mealInfo);
-  const ready = infos.filter(i=>i.status==="ready").length;
+  const ready = RECIPES.filter(okMeal).map(mealInfo).filter(i=>i.status==="ready").length;
   const hour = new Date().getHours();
   const hi = hour<11 ? "What's for breakfast?" : hour<16 ? "What's for lunch?" : "What's for dinner?";
+  const ask = !S.asked ? `
+  <div class="card">
+    <div class="label">Any food allergies at home?</div>
+    <p class="hint" style="margin:4px 0 12px">We'll only show safe meals.</p>
+    <div class="chips">${ALLERGY_LIST.map(([id,l])=>`<button class="chip ${S.allergies.includes(id)?"on":""}" data-act="allergy" data-a="${id}">${l}</button>`).join("")}</div>
+    <div class="row" style="margin-top:14px;gap:10px"><button class="btn o" style="margin:0" data-act="noallergy">No allergies</button><button class="btn g" style="margin:0" data-act="allergydone">Done</button></div>
+    <p class="hint" style="margin-top:10px">Always check labels. Brands differ.</p>
+  </div>` : "";
   return `
   <h1>${hi}</h1>
   <p class="sub">Family favorites, made for less.</p>
-
+  ${ask}
   <div class="card">
     <div class="row between"><div class="label">People eating</div>
       <div class="stepper"><button data-act="fam" data-d="-1" aria-label="Fewer">−</button><span>${S.family}</span><button data-act="fam" data-d="1" aria-label="More">+</button></div>
@@ -198,14 +238,17 @@ function Home(){
     <div class="row between" style="margin-top:14px"><div class="label">Where I shop</div>
       <select id="store">${STORES.map(s=>`<option value="${s.id}" ${s.id===S.store?"selected":""}>${s.name}</option>`).join("")}</select>
     </div>
+    ${S.asked?`<div class="row between" style="margin-top:14px"><div><div class="label">Allergies</div><div class="hint">${allergyNames()||"None"}</div></div><button class="chip" data-act="editallergy">Edit</button></div>`:""}
   </div>
 
   <button class="big t" data-act="goto" data-tab="meals"><span class="ic">🍲</span><span><b>Cook from my pantry</b><small>${ready} meal${ready===1?"":"s"} ready with what you have</small></span></button>
   <button class="big g" data-act="box"><span class="ic">📦</span><span><b>Got a pantry box?</b><small>Add the usual food bank items in one tap</small></span></button>
+  <button class="big m" data-act="goto" data-tab="scratch"><span class="ic">🥖</span><span><b>Make it from scratch</b><small>Tortillas, bread, pizza dough and more</small></span></button>
 
   <div class="stats">
     <div class="stat"><b>${S.pantry.length}</b><span>in my pantry</span></div>
     <div class="stat"><b>${listCount()}</b><span>on my list</span></div>
+    ${S.saved>0?`<div class="stat wide"><b>${money(S.saved)}</b><span>saved cooking from scratch</span></div>`:""}
   </div>`;
 }
 
@@ -227,7 +270,9 @@ function Pantry(){
 }
 
 function Meals(){
-  let rows = RECIPES.map(r=>({r,i:mealInfo(r)}));
+  const okList = RECIPES.filter(okMeal);
+  const hidden = RECIPES.length - okList.length;
+  let rows = okList.map(r=>({r,i:mealInfo(r)}));
   const counts = {ready:0,close:0};
   rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
   if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
@@ -242,6 +287,7 @@ function Meals(){
   return `
   <h1>Meals</h1>
   <p class="sub">For ${S.family}, priced at ${storeName(S.store)}.</p>
+  ${hidden?`<p class="hint" style="margin-top:4px">Hiding ${hidden} meal${hidden===1?"":"s"} with ${allergyNames().toLowerCase()}.</p>`:""}
   <div class="seg">
     <button class="${S.filter==="ready"?"on":""}" data-act="filter" data-f="ready">Ready (${counts.ready})</button>
     <button class="${S.filter==="close"?"on":""}" data-act="filter" data-f="close">Need 1 or 2 (${counts.close})</button>
@@ -255,35 +301,62 @@ function Meals(){
     </button>`).join("") : empty}`;
 }
 
+function addButton(need, pickOk){
+  if(!need.length) return "";
+  const on = need.every(g=>S.list[pick(g).id]);
+  return `<button class="btn t" data-act="addlist" ${on?"disabled style='opacity:.6'":""}>${on?"On your list":"Add "+need.length+" to my list"}</button>`;
+}
+
 function MealDetail(){
   const r = RECIPES.find(x=>x.id===S.meal); const i = mealInfo(r);
-  const rows = r.groups.map(g=>{
-    const it = ITEM[g[0].id];
-    if(isBasic(g)) return `<div class="ing"><span class="dot basic">•</span><span class="nm">${it.name}<small>Basic</small></span></div>`;
-    if(haveG(g)){ const o=pick(g); return `<div class="ing"><span class="dot have">✓</span><span class="nm">${ITEM[o.id].name}<small>You have this</small></span></div>`; }
-    const n = pkgs(g[0]);
-    const alt = g.slice(1).map(o=>ITEM[o.id].name.toLowerCase()).join(" or ");
-    return `<div class="ing"><span class="dot need">+</span><span class="nm">${it.name}<small>${n>1?n+" × ":""}${it.pkg}</small>${alt?`<small class="alt">Or use ${alt}</small>`:""}</span><span class="pr">${money(it.price[S.store]*n)}</span></div>`;
-  }).join("");
-  const allOnList = i.need.length && i.need.every(g=>S.list[g[0].id]);
   return `
   <button class="back" data-act="back">‹ Meals</button>
   <div class="row" style="margin-top:6px"><span class="plate" style="width:64px;height:64px;font-size:32px">${r.e}</span>
     <div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Feeds ${S.family} · ${r.time} min</p></div></div>
-
   <div class="stats" style="margin-top:14px">
     <div class="stat"><b>${money(i.perPlate)}</b><span>a plate</span></div>
     <div class="stat"><b>${i.need.length?money(i.buy):"$0"}</b><span>to buy at ${storeName(S.store)}</span></div>
   </div>
   ${r.tip?`<div class="note" style="margin-top:12px"><b>Money saver:</b> ${r.tip}</div>`:""}
-
   <h2>What you need</h2>
-  <div class="card" style="padding:4px 16px">${rows}</div>
-  ${i.need.length ? `<button class="btn t" data-act="addlist" ${allOnList?"disabled style='opacity:.6'":""}>${allOnList?"On your list":"Add "+i.need.length+" to my list"}</button>` : ""}
-
+  <div class="card" style="padding:4px 16px">${ingRows(r,k())}</div>
+  ${addButton(i.need)}
   <h2>How to make it</h2>
   <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
   <button class="btn g" data-act="made">I made this</button>`;
+}
+
+function Scratch(){
+  const rows = SCRATCH.filter(okMeal).map(r=>({r,i:scratchInfo(r)}));
+  return `
+  <h1>From scratch</h1>
+  <p class="sub">Make it yourself for a lot less.</p>
+  ${rows.map(({r,i})=>`
+    <button class="meal" data-act="sopen" data-id="${r.id}">
+      <span class="plate">${r.e}</span>
+      <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span><span class="tag ready">Save ${money(i.save)}</span><span class="tag cost">${r.time} min</span></span>
+      <span class="price"><b>${money(i.cost)}</b><span>vs ${money(i.store)}</span></span>
+    </button>`).join("")}`;
+}
+
+function ScratchDetail(){
+  const r = SCRATCH.find(x=>x.id===S.scratch); const i = scratchInfo(r);
+  return `
+  <button class="back" data-act="back">‹ From scratch</button>
+  <div class="row" style="margin-top:6px"><span class="plate" style="width:64px;height:64px;font-size:32px">${r.e}</span>
+    <div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Makes ${r.makesText} · ${r.time} min</p></div></div>
+  <div class="stats" style="margin-top:14px">
+    <div class="stat"><b>${money(i.cost)}</b><span>homemade</span></div>
+    <div class="stat"><b>${money(i.store)}</b><span>store bought</span></div>
+  </div>
+  <div class="budget ok">You save ${money(i.save)} making it yourself.</div>
+  ${r.tip?`<div class="note" style="margin-top:12px"><b>Tip:</b> ${r.tip}</div>`:""}
+  <h2>What you need</h2>
+  <div class="card" style="padding:4px 16px">${ingRows(r,1)}</div>
+  ${addButton(i.need)}
+  <h2>How to make it</h2>
+  <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
+  <button class="btn g" data-act="smade">I made this</button>`;
 }
 
 function List(){
@@ -327,10 +400,10 @@ function Find(){
 }
 
 /* ---------- RENDER ---------- */
-const TABS = [["home","🏠","Home"],["pantry","🥫","Pantry"],["meals","🍲","Meals"],["list","📝","List"],["find","📍","Find"]];
+const TABS = [["home","🏠","Home"],["pantry","🥫","Pantry"],["meals","🍲","Meals"],["scratch","🥖","Scratch"],["list","📝","List"],["find","📍","Find"]];
 function render(top){
   const y = window.scrollY;
-  $("#screen").innerHTML = S.meal ? MealDetail() : ({home:Home,pantry:Pantry,meals:Meals,list:List,find:Find}[S.tab])();
+  $("#screen").innerHTML = S.meal ? MealDetail() : S.scratch ? ScratchDetail() : ({home:Home,pantry:Pantry,meals:Meals,scratch:Scratch,list:List,find:Find}[S.tab])();
   $("#nav").innerHTML = TABS.map(([id,i,l])=>`<button class="${S.tab===id?"on":""}" data-act="goto" data-tab="${id}"><span class="i">${i}</span>${l}${id==="list"&&listCount()?`<span class="badge">${listCount()}</span>`:""}</button>`).join("");
   window.scrollTo(0, top?0:y);
   const q=$("#q"); if(q){ q.oninput=e=>{ S.q=e.target.value; const pos=e.target.selectionStart; render(); const n=$("#q"); n.focus(); n.setSelectionRange(pos,pos); }; }
@@ -344,13 +417,26 @@ document.addEventListener("click", e=>{
   if(a==="goto") return go(b.dataset.tab);
   if(a==="fam"){ S.family=Math.min(12,Math.max(1,S.family+ +b.dataset.d)); }
   if(a==="toggle"){ const id=b.dataset.id; S.pantry = has(id)?S.pantry.filter(x=>x!==id):[...S.pantry,id]; }
+  if(a==="allergy"){ const id=b.dataset.a; S.allergies = S.allergies.includes(id)?S.allergies.filter(x=>x!==id):[...S.allergies,id]; }
+  if(a==="noallergy"){ S.allergies=[]; S.asked=true; }
+  if(a==="allergydone"){ S.asked=true; if(S.allergies.length) toast("Showing safe meals only"); }
+  if(a==="editallergy"){ S.asked=false; save(); return render(true); }
   if(a==="box"){ let n=0; PANTRY_BOX.forEach(id=>{ if(!has(id)){S.pantry.push(id);n++;} }); toast(n?`Added ${n} pantry box items`:"Already in your pantry"); S.tab="pantry"; save(); return render(true); }
   if(a==="clearpantry"){ S.pantry=[]; toast("Pantry cleared"); }
   if(a==="filter"){ S.filter=b.dataset.f; }
   if(a==="open"){ S.meal=b.dataset.id; save(); return render(true); }
-  if(a==="back"){ S.meal=null; return render(true); }
-  if(a==="addlist"){ const r=RECIPES.find(x=>x.id===S.meal); mealInfo(r).need.forEach(g=>{ const id=g[0].id; S.list[id]=Math.max(S.list[id]||0, pkgs(g[0])); }); toast("Added to your list"); }
+  if(a==="sopen"){ S.scratch=b.dataset.id; save(); return render(true); }
+  if(a==="back"){ S.meal=null; S.scratch=null; return render(true); }
+  if(a==="addlist"){
+    const isS = !!S.scratch;
+    const r = isS ? SCRATCH.find(x=>x.id===S.scratch) : RECIPES.find(x=>x.id===S.meal);
+    const need = isS ? scratchInfo(r).need : mealInfo(r).need;
+    const s = isS ? 1 : k();
+    need.forEach(g=>{ const o=pick(g); S.list[o.id]=Math.max(S.list[o.id]||0, pkgs(o,s)); });
+    toast("Added to your list");
+  }
   if(a==="made"){ const r=RECIPES.find(x=>x.id===S.meal); const used=r.groups.filter(g=>!isBasic(g)&&haveG(g)).map(pick).filter(o=>o.use*k()>=1).map(o=>o.id); S.pantry=S.pantry.filter(id=>!used.includes(id)); toast(used.length?"Nice! Pantry updated":"Nice work!"); S.meal=null; save(); return render(true); }
+  if(a==="smade"){ const r=SCRATCH.find(x=>x.id===S.scratch); const i=scratchInfo(r); const used=r.groups.filter(g=>!isBasic(g)&&haveG(g)).map(pick).filter(o=>o.use>=1).map(o=>o.id); S.pantry=S.pantry.filter(id=>!used.includes(id)); if(!has(r.makes)) S.pantry.push(r.makes); S.saved += i.save; toast("You saved "+money(i.save)+"! Added to your pantry"); S.scratch=null; save(); return render(true); }
   if(a==="tick"){ const id=b.dataset.id; S.done = S.done.includes(id)?S.done.filter(x=>x!==id):[...S.done,id]; }
   if(a==="gotit"){ if(!S.done.length) return toast("Check off what you bought"); S.done.forEach(id=>{ if(!has(id)) S.pantry.push(id); delete S.list[id]; }); toast(`${S.done.length} added to your pantry`); S.done=[]; }
   if(a==="clearlist"){ S.list={}; S.done=[]; toast("List cleared"); }
