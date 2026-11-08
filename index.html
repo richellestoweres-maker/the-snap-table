@@ -119,6 +119,10 @@ h2 .count{display:inline-grid;place-items:center;min-width:22px;height:22px;bord
 nav button{font-size:11px}
 .tag.fancy{background:#F1E6F7;color:#6B3F8A}
 .seg button{font-size:13px}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips.scroll .chip{flex:none}
+.cuisine{width:100%;margin-top:10px}
+.tag.world{background:#E3ECF7;color:#2E4E7A}
 </style>
 </head>
 <body>
@@ -134,7 +138,7 @@ nav button{font-size:11px}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=100"></script>
+<script src="data.js?v=128"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -155,11 +159,11 @@ SCRATCH.forEach(r=>{ r.groups = parseIng(r.ing); });
 
 /* ---------- STATE ---------- */
 const KEY = "snaptable.v1";
-let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0};
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all"};
 try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:""}); }catch(e){}
 S.pantry = S.pantry.filter(id=>ITEM[id]);
 Object.keys(S.list).forEach(id=>{ if(!ITEM[id]) delete S.list[id]; });
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved,mtype:S.mtype,cuisine:S.cuisine})); }catch(e){} }
 
 /* ---------- HELPERS ---------- */
 const $ = s=>document.querySelector(s);
@@ -173,6 +177,8 @@ const isBasic = g=>ITEM[opts(g)[0].id].basic;
 const haveG = g=>opts(g).some(o=>has(o.id));
 const pick = g=>opts(g).find(o=>has(o.id))||opts(g)[0];
 const okMeal = r=>r.groups.every(g=>opts(g).length);
+const mtype = r=>r.type||TYPE_OF[r.id]||"dinner";
+const cuisine = r=>r.cuisine||CUISINE_OF[r.id]||"American";
 const pkgs = (o,s)=>Math.max(1, Math.ceil(o.use*s-0.001));
 function mealInfo(r){
   let cost=0; const need=[];
@@ -274,7 +280,7 @@ function Pantry(){
 function Meals(){
   const okList = RECIPES.filter(okMeal);
   const hidden = RECIPES.length - okList.length;
-  let rows = okList.map(r=>({r,i:mealInfo(r)}));
+  let rows = okList.filter(r=>(S.mtype==="all"||mtype(r)===S.mtype)&&(S.cuisine==="all"||cuisine(r)===S.cuisine)).map(r=>({r,i:mealInfo(r)}));
   const counts = {ready:0,close:0};
   rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
   if(S.filter==="fancy") rows = rows.filter(x=>x.r.fancy); else if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
@@ -290,6 +296,8 @@ function Meals(){
   <h1>Meals</h1>
   <p class="sub">For ${S.family}, priced at ${storeName(S.store)}.</p>
   ${hidden?`<p class="hint" style="margin-top:4px">Hiding ${hidden} meal${hidden===1?"":"s"} with ${allergyNames().toLowerCase()}.</p>`:""}
+  <div class="chips scroll" style="margin-top:12px">${MEAL_TYPES.map(([id,l])=>'<button class="chip '+(S.mtype===id?"on":"")+'" data-act="mtype" data-t="'+id+'">'+l+'</button>').join("")}</div>
+  <select id="cuisine" class="cuisine">${["all",...CUISINES].map(c=>'<option value="'+c+'" '+(S.cuisine===c?"selected":"")+'>'+(c==="all"?"All cuisines":c)+'</option>').join("")}</select>
   <div class="seg">
     <button class="${S.filter==="ready"?"on":""}" data-act="filter" data-f="ready">Ready (${counts.ready})</button>
     <button class="${S.filter==="close"?"on":""}" data-act="filter" data-f="close">Need 1 or 2 (${counts.close})</button>
@@ -299,7 +307,7 @@ function Meals(){
   ${rows.length ? rows.map(({r,i})=>`
     <button class="meal" data-act="open" data-id="${r.id}">
       <span class="plate">${r.e}</span>
-      <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span>${r.fancy?'<span class="tag fancy">Fancy for less</span>':""}${tagFor(i)}<span class="tag cost">${r.time} min</span></span>
+      <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span>${r.fancy?'<span class="tag fancy">Fancy for less</span>':""}${cuisine(r)!=="American"?'<span class="tag world">'+cuisine(r)+'</span>':""}${tagFor(i)}<span class="tag cost">${r.time} min</span></span>
       <span class="price"><b>${money(i.perPlate)}</b><span>a plate</span></span>
     </button>`).join("") : empty}`;
 }
@@ -412,6 +420,7 @@ function render(top){
   const q=$("#q"); if(q){ q.oninput=e=>{ S.q=e.target.value; const pos=e.target.selectionStart; render(); const n=$("#q"); n.focus(); n.setSelectionRange(pos,pos); }; }
   const bud=$("#budget"); if(bud){ bud.oninput=e=>{ S.budget=e.target.value.replace(/[^0-9.]/g,""); save(); }; }
   const st=$("#store"); if(st){ st.onchange=e=>{ S.store=e.target.value; save(); render(); }; }
+  const cu=$("#cuisine"); if(cu){ cu.onchange=e=>{ S.cuisine=e.target.value; save(); render(); }; }
 }
 
 document.addEventListener("click", e=>{
@@ -426,6 +435,7 @@ document.addEventListener("click", e=>{
   if(a==="editallergy"){ S.asked=false; save(); return render(true); }
   if(a==="box"){ let n=0; PANTRY_BOX.forEach(id=>{ if(!has(id)){S.pantry.push(id);n++;} }); toast(n?`Added ${n} pantry box items`:"Already in your pantry"); S.tab="pantry"; save(); return render(true); }
   if(a==="clearpantry"){ S.pantry=[]; toast("Pantry cleared"); }
+  if(a==="mtype"){ S.mtype=b.dataset.t; }
   if(a==="filter"){ S.filter=b.dataset.f; }
   if(a==="open"){ S.meal=b.dataset.id; save(); return render(true); }
   if(a==="sopen"){ S.scratch=b.dataset.id; save(); return render(true); }
