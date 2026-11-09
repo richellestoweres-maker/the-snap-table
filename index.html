@@ -517,9 +517,11 @@ function unfrac(s){ return s.split(" ").reduce((a,p)=>a+(p.includes("/")?(+p.spl
 function plu(u,n){ return n>1 ? (PLURAL[u]||u+"s") : u; }
 function stepAmt(r,id,mult){
   const k=STEP_KW[id]; if(!k) return "";
-  const m=r.steps.join(" ").match(new RegExp("(\\d+ \\d/\\d|\\d/\\d|\\d+) (cups?|tablespoons?|teaspoons?|sticks?)? ?(?:soft |melted |cold |warm |dry |large )?"+k+"\\b(?! per)","i"));
-  if(!m) return "";
-  const q=Math.round(unfrac(m[1])*mult*4)/4; const u=(m[2]||"").replace(/s$/,"");
+  const re=new RegExp("(\\d+ \\d/\\d|\\d/\\d|\\d+) (cups?|tablespoons?|teaspoons?|sticks?)? ?(?:soft |melted |cold |warm |dry |large )?"+k+"\\b(?! per)","gi");
+  const ms=[...r.steps.join(" ").matchAll(re)]; if(!ms.length) return "";
+  const units=ms.map(m=>(m[2]||"").toLowerCase().replace(/s$/,""));
+  const u=units[0]; const all=units.every(x=>x===u);
+  const q=Math.round((all?ms.reduce((s,m)=>s+unfrac(m[1]),0):unfrac(ms[0][1]))*mult*4)/4;
   const nm=id==="eggs"?plu("egg",q):ITEM[id].name.toLowerCase();
   return frac(q)+" "+(u?plu(u,q)+" ":"")+nm;
 }
