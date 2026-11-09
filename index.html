@@ -248,8 +248,8 @@ nav .badge{background:var(--mustard)}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="photos.js?v=3"></script>
-<script src="data.js?v=229"></script>
+<script src="photos.js?v=4"></script>
+<script src="data.js?v=230"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -312,7 +312,7 @@ const cuisine = r=>r.cuisine||CUISINE_OF[r.id]||"American";
 const occ = r=>r.occasion||(typeof HOLIDAY_OF!=="undefined"&&HOLIDAY_OF[r.id])||"";
 const KIDS = new Set("pbtoast pancakes chickenmac corndogmuffins pizza pizzatoast quesadillas grilledcheese tacos spaghetti sloppyjoes bakedmac chilidogs burgers mugcake smoothie antslog appledippers trailmix bananaoatcookies oatspbj oatspb frenchtoast bananapancakes eggsandwich sliders rollups musubi onigiri popcorn icecreambag nochurn sugarcookies butterchicken friedrice orangechicken tacopasta cheeseburgerpasta scratchmac chickenparm noodlesoup meatballsgravy bcburritos beantacos fritopie nachos potatoes parfait cinnamonrolls monkeybread hotcocoa chocpudding bananapudding churros garlicknots teriyaki lomein ramenbowl creamyrice tunamelt eggsalad blt".split(" "));
 const NOSTOVE = new Set("oatspb oatspbj oatsapple oatschoc oatsberry parfait yogurtbowl pbtoast antslog appledippers trailmix rollups tunasalad chickensalad cuketomato greeksalad gazpacho honeyhummus redpepperhummus hummus smoothie mugcake tzatziki caesarwrap orzosalad".split(" "));
-const CARBY = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough piecrust flour sugar potatoes sweetpot instpot fries cpotatoes cyams cereal oats crackers chips pancake cornbread cornmeal masa grits honey syrup juice bananas raisins driedfruit condmilk pudding vwafers graham browniemix muffinmix stuffingmix hamhelper granola cfruit applesauce jelly bbq brownsugar molasses wonton phyllo".split(" "));
+const CARBY = new Set("popcorn rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough piecrust flour sugar potatoes sweetpot instpot fries cpotatoes cyams cereal oats crackers chips pancake cornbread cornmeal masa grits honey syrup juice bananas raisins driedfruit condmilk pudding vwafers graham browniemix muffinmix stuffingmix hamhelper granola cfruit applesauce jelly bbq brownsugar molasses wonton phyllo".split(" "));
 const KETO_EXTRA = new Set("blackbeans pintocan kidney refried chickpeas pinto lentils butterbeans blackeyed blackeyedcan corn frozcorn creamedcorn hominy frozpeas cpeas mixedveg mixedcan carrots ccarrots apples cranberries cranberrysauce watermelon chili".split(" "));
 const SWEET = new Set("sugar honey syrup juice condmilk pudding brownsugar molasses jelly cranberrysauce vwafers browniemix muffinmix".split(" "));
 const STARCH = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough potatoes instpot fries cpotatoes grits masa cornbread hamhelper stuffingmix".split(" "));
