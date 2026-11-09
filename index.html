@@ -83,6 +83,10 @@ select{height:44px;border-radius:12px;border:1px solid var(--line);background:va
 .ing .nm small{display:block;font-weight:600;color:var(--soft);font-size:13px}
 .ing .pr{font-weight:800}
 ol.steps{padding-left:22px}
+.ingl{list-style:none;padding:0;margin:0}
+.ingl li{padding:9px 0;border-bottom:1px solid var(--line);line-height:1.4}
+.ingl li:last-child{border-bottom:0}
+.ingl small{color:var(--soft)}
 ol.steps li{margin:10px 0;line-height:1.5}
 .compare{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .store{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 4px;text-align:center}
@@ -248,8 +252,8 @@ nav .badge{background:var(--mustard)}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="photos.js?v=4"></script>
-<script src="data.js?v=230"></script>
+<script src="photos.js?v=3"></script>
+<script src="data.js?v=229"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -312,7 +316,7 @@ const cuisine = r=>r.cuisine||CUISINE_OF[r.id]||"American";
 const occ = r=>r.occasion||(typeof HOLIDAY_OF!=="undefined"&&HOLIDAY_OF[r.id])||"";
 const KIDS = new Set("pbtoast pancakes chickenmac corndogmuffins pizza pizzatoast quesadillas grilledcheese tacos spaghetti sloppyjoes bakedmac chilidogs burgers mugcake smoothie antslog appledippers trailmix bananaoatcookies oatspbj oatspb frenchtoast bananapancakes eggsandwich sliders rollups musubi onigiri popcorn icecreambag nochurn sugarcookies butterchicken friedrice orangechicken tacopasta cheeseburgerpasta scratchmac chickenparm noodlesoup meatballsgravy bcburritos beantacos fritopie nachos potatoes parfait cinnamonrolls monkeybread hotcocoa chocpudding bananapudding churros garlicknots teriyaki lomein ramenbowl creamyrice tunamelt eggsalad blt".split(" "));
 const NOSTOVE = new Set("oatspb oatspbj oatsapple oatschoc oatsberry parfait yogurtbowl pbtoast antslog appledippers trailmix rollups tunasalad chickensalad cuketomato greeksalad gazpacho honeyhummus redpepperhummus hummus smoothie mugcake tzatziki caesarwrap orzosalad".split(" "));
-const CARBY = new Set("popcorn rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough piecrust flour sugar potatoes sweetpot instpot fries cpotatoes cyams cereal oats crackers chips pancake cornbread cornmeal masa grits honey syrup juice bananas raisins driedfruit condmilk pudding vwafers graham browniemix muffinmix stuffingmix hamhelper granola cfruit applesauce jelly bbq brownsugar molasses wonton phyllo".split(" "));
+const CARBY = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough piecrust flour sugar potatoes sweetpot instpot fries cpotatoes cyams cereal oats crackers chips pancake cornbread cornmeal masa grits honey syrup juice bananas raisins driedfruit condmilk pudding vwafers graham browniemix muffinmix stuffingmix hamhelper granola cfruit applesauce jelly bbq brownsugar molasses wonton phyllo".split(" "));
 const KETO_EXTRA = new Set("blackbeans pintocan kidney refried chickpeas pinto lentils butterbeans blackeyed blackeyedcan corn frozcorn creamedcorn hominy frozpeas cpeas mixedveg mixedcan carrots ccarrots apples cranberries cranberrysauce watermelon chili".split(" "));
 const SWEET = new Set("sugar honey syrup juice condmilk pudding brownsugar molasses jelly cranberrysauce vwafers browniemix muffinmix".split(" "));
 const STARCH = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough potatoes instpot fries cpotatoes grits masa cornbread hamhelper stuffingmix".split(" "));
@@ -480,6 +484,67 @@ function addButton(need, pickOk){
   return `<button class="btn t" data-act="addlist" ${on?"disabled style='opacity:.6'":""}>${on?"On your list":"Add "+need.length+" to my list"}</button>`;
 }
 
+
+// Ingredient amounts: package share x units per package, scaled to family size
+const AMT = {
+  chicken:[3,"lb"], breast:[2.5,"lb"], drum:[3,"lb"], beef:[1,"lb"], turkey:[1,"lb"], pork:[1.5,"lb"], sausage:[13,"oz"], bsausage:[1,"lb"], bacon:[12,"slice"], hotdogs:[8,"hot dog",1],
+  cchicken:[1,"can"], tuna:[1,"can"], salmon:[1,"can"], spam:[1,"can"], chili:[1,"can"], blackbeans:[1,"can"], pintocan:[1,"can"], kidney:[1,"can"], refried:[1,"can"], chickpeas:[1,"can"],
+  dicedtom:[1,"can"], rotel:[1,"can"], tomsauce:[1,"can"], tompaste:[10,"tablespoon"], pastasauce:[3,"cup"], enchsauce:[1,"can"], creamsoup:[1,"can"], broth:[4,"cup"], corn:[1,"can"], greenbeans:[1,"can"],
+  mixedcan:[1,"can"], cfruit:[1,"can"], applesauce:[3,"cup"], evapmilk:[1,"can"], pb:[1.75,"cup"], jelly:[1.5,"cup"], salsa:[2,"cup"], rice:[4.5,"cup"], pasta:[16,"oz"], elbow:[16,"oz"],
+  noodles:[12,"oz"], ramen:[6,"pack"], macbox:[1,"box"], pinto:[5,"cup"], lentils:[2.25,"cup"], oats:[14,"cup"], cereal:[12,"cup"], instpot:[4,"cup"], chips:[1,"bag"], crackers:[4,"sleeve"],
+  bread:[20,"slice"], buns:[8,"bun",1], hdbuns:[8,"hot dog bun",1], tortillas:[10,"tortilla",1], corntort:[30,"corn tortilla",1], flour:[18,"cup"], sugar:[9,"cup"], cornbread:[1,"box"], pancake:[6,"cup"], eggs:[12,"egg",1],
+  milk:[16,"cup"], cheese:[2,"cup"], butter:[4,"stick"], sourcream:[2,"cup"], creamcheese:[8,"oz"], yogurt:[4,"cup"], onion:[6,"onion",.5], potatoes:[10,"potato",1], sweetpot:[5,"sweet potato",1], carrots:[12,"carrot",1],
+  celery:[8,"stalk"], peppers:[3,"bell pepper",.5], jalapeno:[8,"jalapeño",1], cilantro:[1,"bunch"], limes:[4,"lime",.5], tomatoes:[5,"tomato",.5], lettuce:[1,"head"], cabbage:[1,"head"], bananas:[6,"banana",.5], apples:[9,"apple",.5],
+  mixedveg:[2.5,"cup"], broccoli:[3,"cup"], frozcorn:[2.5,"cup"], frozpeas:[2.5,"cup"], fries:[1,"bag"], frozpeppers:[3,"cup"], yeast:[3,"packet"], bakingpowder:[72,"teaspoon"], cornmeal:[6,"cup"], cocoa:[2.5,"cup"],
+  pizzadough:[1,"lb"], biscuits:[8,"biscuit",1], soymilk:[8,"cup"], sunbutter:[1.75,"cup"], frozberries:[3.5,"cup"], italsausage:[1,"lb"], parmesan:[1.5,"cup"], cottagecheese:[2,"cup"], spinach:[5,"cup"], herbs:[1,"bunch"],
+  lemons:[3,"lemon",.5], cucumber:[1,"cucumber",.5], watermelon:[1,"watermelon",.25], honey:[1,"cup"], ham:[1,"lb"], deli:[9,"oz"], fish:[1,"lb"], meatballs:[24,"oz"], grits:[4.5,"cup"], raisins:[2.25,"cup"],
+  mushrooms:[8,"oz"], zucchini:[2,"zucchini",.5], coconutmilk:[1,"can"], vanilla:[12,"teaspoon"], vwafers:[1,"box"], pudding:[1,"box"], popcorn:[6,"cup"], currypowder:[8,"tablespoon"], cbeef:[1,"can"], cpork:[1,"can"],
+  cpotatoes:[1,"can"], cspinach:[1,"can"], cyams:[1,"can"], cpeas:[1,"can"], ccarrots:[1,"can"], csoup:[1,"can"], ravioli:[1,"can"], juice:[8,"cup"], driedfruit:[1.25,"cup"], uhtmilk:[4,"cup"],
+  powdermilk:[10.5,"cup"], blockcheese:[2,"cup"], nuggets:[1,"bag"], frozbreast:[3,"lb"], frozspinach:[1,"bag"], brownrice:[4.5,"cup"], masa:[14,"cup"], wwflour:[17,"cup"], naan:[2,"naan",1], breadcrumbs:[3.75,"cup"],
+  croutons:[2.5,"cup"], browniemix:[1,"box"], muffinmix:[1,"pouch"], granola:[3,"cup"], syrup:[3,"cup"], italdressing:[2,"cup"], gravymix:[1,"packet"], alfredosauce:[1.75,"cup"], groundpork:[1,"lb"], porkshoulder:[3,"lb"],
+  ribs:[3,"lb"], imcrab:[8,"oz"], condmilk:[1,"can"], pumpkin:[1,"can"], lasagna:[16,"noodle"], hamhelper:[1,"box"], brownsugar:[4.5,"cup"], graham:[27,"graham cracker",1], piecrust:[2,"pie crust",1], pita:[6,"pita",1],
+  heavycream:[2,"cup"], feta:[1,"cup"], avocado:[2,"avocado",.5], greenonion:[6,"green onion",1], nori:[10,"sheet"], ricevinegar:[1.5,"cup"], wonton:[48,"wrapper"], tofu:[1,"block"], hominy:[1,"can"], wholeturkey:[12,"lb"],
+  spiralham:[8,"lb"], hamhock:[1,"ham hock",1], cranberrysauce:[1,"can"], creamedcorn:[1,"can"], friedonions:[2,"cup"], sauerkraut:[1.75,"cup"], blackeyedcan:[1,"can"], blackeyed:[2.5,"cup"], stuffingmix:[1,"box"], molasses:[1.5,"cup"],
+  buttermilk:[4,"cup"], cranberries:[3,"cup"], collards:[1,"bunch"], cornhusks:[30,"husk"], orzo:[2.5,"cup"], olives:[1,"cup"], roastedpeppers:[1.5,"cup"], butterbeans:[1,"can"], eggplant:[1,"eggplant",.5], phyllo:[40,"sheet"],
+  grapeleaves:[60,"leaf"], cauliflower:[3,"cup"], pepperoni:[6,"oz"], stringcheese:[12,"string cheese",1], taco:[1,"packet"], bbq:[2,"cup"], ketchup:[2.25,"cup"], mustard:[1.5,"cup"], mayo:[3.5,"cup"], soy:[1.75,"cup"],
+  ranch:[2,"cup"], cajun:[24,"tablespoon"], bouillon:[20,"teaspoon"]
+};
+const BASIC_AMT = {oil:"Oil for cooking", salt:"Salt and pepper", garlicp:"Garlic powder", spices:"Spices you like", italian:"Italian seasoning", cinnamon:"Cinnamon", gingerp:"Ground ginger", vinegar:"Vinegar", poultry:"Poultry seasoning", soy:"Soy sauce", mustard:"Mustard", ketchup:"Ketchup", taco:"Taco seasoning", cajun:"Cajun seasoning", currypowder:"Curry powder", sugar:"Sugar", ranch:"Ranch", bbq:"BBQ sauce", mayo:"Mayo"};
+const PLURAL = {potato:"potatoes", tomato:"tomatoes", "sweet potato":"sweet potatoes", leaf:"leaves", zucchini:"zucchini", bunch:"bunches", box:"boxes", pouch:"pouches", "string cheese":"string cheese", lb:"lb", oz:"oz", naan:"naan", "jalapeño":"jalapeños"};
+const STEP_KW = {flour:"flour", sugar:"sugar", brownsugar:"brown sugar", butter:"butter", eggs:"eggs?", milk:"milk", oats:"oats", cocoa:"cocoa", pb:"peanut butter", honey:"honey", rice:"rice", broth:"broth", heavycream:"cream", cornmeal:"cornmeal", oil:"oil", soy:"soy sauce", mayo:"mayo", bakingpowder:"baking powder", pancake:"pancake mix", powdermilk:"powdered milk", vinegar:"vinegar", cinnamon:"cinnamon", vanilla:"vanilla"};
+function frac(x){ const w=Math.floor(x+1e-6), f=Math.round((x-w)*4)/4, F={0.25:"1/4",0.5:"1/2",0.75:"3/4"}[f]||""; if(f>=1) return String(w+1); return (w?w+(F?" "+F:""):F)||"0"; }
+function unfrac(s){ return s.split(" ").reduce((a,p)=>a+(p.includes("/")?(+p.split("/")[0])/(+p.split("/")[1]):+p),0); }
+function plu(u,n){ return n>1 ? (PLURAL[u]||u+"s") : u; }
+function stepAmt(r,id,mult){
+  const k=STEP_KW[id]; if(!k) return "";
+  const m=r.steps.join(" ").match(new RegExp("(\\d+ \\d/\\d|\\d/\\d|\\d+) (cups?|tablespoons?|teaspoons?|sticks?)? ?(?:soft |melted |cold |warm |dry |large )?"+k+"\\b(?! per)","i"));
+  if(!m) return "";
+  const q=Math.round(unfrac(m[1])*mult*4)/4; const u=(m[2]||"").replace(/s$/,"");
+  const nm=id==="eggs"?plu("egg",q):ITEM[id].name.toLowerCase();
+  return frac(q)+" "+(u?plu(u,q)+" ":"")+nm;
+}
+function amtText(id,use,mult){
+  const it=ITEM[id], a=AMT[id], nm=it.name.toLowerCase();
+  if(!a || !use) return BASIC_AMT[id] || it.name;
+  let q=use*a[0]*mult, u=a[1];
+  if(a[2]){ const st=a[2]; q=Math.max(st,Math.round(q/st)*st); return frac(q)+" "+plu(u,q); }
+  if(u==="cup" && q<0.25){ q*=16; u="tablespoon"; }
+  if(u==="tablespoon" && q<1){ q*=3; u="teaspoon"; }
+  if(u==="stick" && q<0.5){ q*=8; u="tablespoon"; }
+  if(u==="lb" && q<0.75){ q*=16; u="oz"; }
+  let st=["oz","slice","sleeve","noodle","wrapper","sheet","leaf","husk","stalk"].includes(u)?1:u==="tablespoon"?0.5:u==="can"?0.5:0.25;
+  q=Math.max(st,Math.round(q/st)*st);
+  return frac(q)+" "+plu(u,q)+" "+nm;
+}
+function amtList(r,mult){
+  return r.groups.map(g=>{
+    const ok=opts(g), list=ok.length?ok:g, o=(ok.length&&pick(g))||list[0];
+    const main=(r.amt&&r.amt[o.id])||stepAmt(r,o.id,mult)||amtText(o.id,o.use,mult);
+    const alt=list.filter(x=>x.id!==o.id).map(x=>ITEM[x.id].name.toLowerCase()).join(" or ");
+    return "<li>"+main+(alt?" <small>(or "+alt+")</small>":"")+"</li>";
+  }).join("");
+}
+
 function MealDetail(){
   const r = RECIPES.find(x=>x.id===S.meal); const i = mealInfo(r);
   return `
@@ -492,11 +557,13 @@ function MealDetail(){
     <div class="stat"><b>${i.need.length?money(i.buy):"$0"}</b><span>to buy at ${storeName(S.store)}</span></div>
   </div>
   ${r.tip?`<div class="note" style="margin-top:12px"><b>Money saver:</b> ${r.tip}</div>`:""}
-  <h2>What you need</h2>
+  <h2>Ingredients</h2>
+  <div class="card"><ul class="ingl">${amtList(r,k())}</ul></div>
+  <h2>Instructions</h2>
+  <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol>${S.family!=4?'<p class="hint">Step amounts are for 4.</p>':""}</div>
+  <h2>What to buy</h2>
   <div class="card" style="padding:4px 16px">${ingRows(r,k())}</div>
   ${addButton(i.need)}
-  <h2>How to make it</h2>
-  <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
   <button class="btn g" data-act="made">I made this</button>`;
 }
 
@@ -525,11 +592,13 @@ function ScratchDetail(){
   </div>
   <div class="budget ok">You save ${money(i.save)} making it yourself.</div>
   ${r.tip?`<div class="note" style="margin-top:12px"><b>Tip:</b> ${r.tip}</div>`:""}
-  <h2>What you need</h2>
+  <h2>Ingredients</h2>
+  <div class="card"><ul class="ingl">${amtList(r,1)}</ul></div>
+  <h2>Instructions</h2>
+  <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
+  <h2>What to buy</h2>
   <div class="card" style="padding:4px 16px">${ingRows(r,1)}</div>
   ${addButton(i.need)}
-  <h2>How to make it</h2>
-  <div class="card"><ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
   <button class="btn g" data-act="smade">I made this</button>`;
 }
 
