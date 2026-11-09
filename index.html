@@ -323,7 +323,7 @@ const KETO_EXTRA = new Set("blackbeans pintocan kidney refried chickpeas pinto l
 const SWEET = new Set("sugar honey syrup juice condmilk pudding brownsugar molasses jelly cranberrysauce vwafers browniemix muffinmix".split(" "));
 const STARCH = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough potatoes instpot fries cpotatoes grits masa cornbread hamhelper stuffingmix".split(" "));
 const MEAT = new Set(ITEMS.filter(i=>i.cat==="Meat and protein").map(i=>i.id).concat("cchicken tuna salmon spam chili cbeef cpork meatballs broth bouillon creamsoup csoup ravioli nuggets frozbreast gravymix".split(" ")));
-const PORK = new Set((typeof EXTRA_PORK!=="undefined"?EXTRA_PORK.join(" ")+" ":"")+"pepperoni pork sausage bsausage bacon hotdogs spam groundpork porkshoulder ribs ham spiralham hamhock cpork italsausage".split(" "));
+const PORK = new Set("pepperoni pork sausage bsausage bacon hotdogs spam groundpork porkshoulder ribs ham spiralham hamhock cpork italsausage".split(" ").concat(typeof EXTRA_PORK!=="undefined"?EXTRA_PORK:[]));
 const ANIMAL = new Set([...(ALLERGENS.milk||[]),...(ALLERGENS.egg||[]),"eggs","honey","mayo"]);
 const WHEAT = new Set(ALLERGENS.wheat||[]), DAIRY = new Set(ALLERGENS.milk||[]);
 const reqAll = (r,set)=>r.groups.some(g=>{ const o=opts(g); return o.length && o.every(x=>set.has(x.id)); });
