@@ -410,3 +410,7 @@ cranberryjelly:{list:["Canned: 1 can (14 oz) jellied cranberry sauce","Homemade:
 greenbeancasserole:{list:["3 cans (14 oz each) green beans, drained","1 can (10 oz) cream of chicken or mushroom soup","1/2 cup milk","1 teaspoon soy sauce","1 can (6 oz) crispy fried onions, divided","1/4 teaspoon pepper"],
  steps:["Heat oven to 350°F.","Mix the green beans, soup, milk, soy sauce, pepper and half the onions in a baking dish.","Bake 25 minutes until bubbly.","Top with the rest of the onions and bake 5 minutes more."]}
 });
+Object.assign(FIX, {
+holidaymac:{list:["1 lb elbow macaroni","2 blocks (8 oz each) sharp cheddar, shredded (about 4 cups), divided","1 can (12 oz) evaporated milk","1/2 cup milk","2 eggs","4 tablespoons butter, cut into small pieces","1 teaspoon salt","1/2 teaspoon pepper","1/2 teaspoon garlic powder (optional)"],
+ steps:["Heat oven to 350°F and grease a 9x13 baking dish.","Boil the macaroni in salted water 2 minutes less than the box says. Drain well.","Whisk the eggs, evaporated milk, milk, salt, pepper and garlic powder in a bowl.","Spread half the macaroni in the dish. Dot with half the butter and sprinkle with 1 1/2 cups cheese.","Add the rest of the macaroni, the rest of the butter and another 1 1/2 cups cheese.","Pour the egg mixture evenly over the top and finish with the last cup of cheese.","Bake uncovered 40 to 45 minutes until set in the middle and golden on top. Rest 10 minutes so it slices into squares."],tip:"Shred a block yourself. It melts creamier and costs less than bagged cheese."}
+});
