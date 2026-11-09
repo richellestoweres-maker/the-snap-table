@@ -7,6 +7,11 @@
 <link rel="icon" href="Fresh%20Groceries%20in%20a%20Paper%20Sack.png">
 <link rel="apple-touch-icon" href="Fresh%20Groceries%20in%20a%20Paper%20Sack.png">
 <meta name="theme-color" content="#3A1520">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SNAP Table">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -753,6 +758,29 @@ document.addEventListener("click", e=>{
 });
 
 render(true);
+</script>
+<script>
+/* Home screen app: offline support and an Add to home screen banner */
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
+(function(){
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  let seen = false; try { seen = localStorage.getItem("snaptable.installHint") === "no"; } catch(e) {}
+  if (standalone || seen) return;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  let deferred = null;
+  function show(msg, canInstall){
+    if (document.getElementById("installbar")) return;
+    const b = document.createElement("div"); b.id = "installbar";
+    b.style.cssText = "position:fixed;left:12px;right:12px;bottom:76px;z-index:50;max-width:456px;margin:0 auto;background:#3A1520;color:#F8F1E7;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);font-size:14px";
+    b.innerHTML = '<img src="Fresh%20Groceries%20in%20a%20Paper%20Sack.png" alt="" style="width:36px;height:36px;border-radius:8px"><span style="flex:1">'+msg+'</span>'+(canInstall?'<button id="installgo" style="background:#B8862E;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:600">Add</button>':'')+'<button id="installno" aria-label="Close" style="background:none;border:0;color:#F8F1E7;font-size:20px;padding:0 4px">×</button>';
+    document.body.appendChild(b);
+    document.getElementById("installno").onclick = () => { b.remove(); try { localStorage.setItem("snaptable.installHint","no"); } catch(e) {} };
+    const go = document.getElementById("installgo");
+    if (go) go.onclick = async () => { b.remove(); if (deferred) { deferred.prompt(); await deferred.userChoice; deferred = null; } };
+  }
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; show("Add SNAP Table to your home screen.", true); });
+  if (ios) setTimeout(() => show("Add to your home screen: tap Share, then Add to Home Screen.", false), 2500);
+})();
 </script>
 </body>
 </html>
