@@ -232,6 +232,7 @@ nav .badge{background:var(--mustard)}
 .emptycard .btn{display:inline-block;width:auto;padding:0 28px}
 .stat b{font-family:Fraunces,serif;color:var(--burg)}
 .back{color:var(--burg)}
+.chip.sm{font-size:13px;padding:6px 12px}
 </style>
 </head>
 <body>
@@ -247,8 +248,8 @@ nav .badge{background:var(--mustard)}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="photos.js?v=2"></script>
-<script src="data.js?v=250"></script>
+<script src="photos.js?v=1"></script>
+<script src="data.js?v=228"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -269,11 +270,11 @@ SCRATCH.forEach(r=>{ r.groups = parseIng(r.ing); });
 
 /* ---------- STATE ---------- */
 const KEY = "snaptable.v1";
-let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:"", occ:"all", week:{}, added:{}, uses:{}, lview:"week"};
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:"", occ:"all", diets:[], week:{}, added:{}, uses:{}, lview:"week"};
 try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:"", mq:""}); }catch(e){}
 S.pantry = S.pantry.filter(id=>ITEM[id]);
 Object.keys(S.list).forEach(id=>{ if(!ITEM[id]) delete S.list[id]; });
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved,mtype:S.mtype,cuisine:S.cuisine,week:S.week,added:S.added,uses:S.uses,lview:S.lview})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved,mtype:S.mtype,cuisine:S.cuisine,diets:S.diets,week:S.week,added:S.added,uses:S.uses,lview:S.lview})); }catch(e){} }
 
 /* ---------- HELPERS ---------- */
 const $ = s=>document.querySelector(s);
@@ -309,6 +310,32 @@ const okMeal = r=>r.groups.every(g=>opts(g).length);
 const mtype = r=>r.type||TYPE_OF[r.id]||"dinner";
 const cuisine = r=>r.cuisine||CUISINE_OF[r.id]||"American";
 const occ = r=>r.occasion||(typeof HOLIDAY_OF!=="undefined"&&HOLIDAY_OF[r.id])||"";
+const KIDS = new Set("pbtoast pancakes chickenmac corndogmuffins pizza pizzatoast quesadillas grilledcheese tacos spaghetti sloppyjoes bakedmac chilidogs burgers mugcake smoothie antslog appledippers trailmix bananaoatcookies oatspbj oatspb frenchtoast bananapancakes eggsandwich sliders rollups musubi onigiri popcorn icecreambag nochurn sugarcookies butterchicken friedrice orangechicken tacopasta cheeseburgerpasta scratchmac chickenparm noodlesoup meatballsgravy bcburritos beantacos fritopie nachos potatoes parfait cinnamonrolls monkeybread hotcocoa chocpudding bananapudding churros garlicknots teriyaki lomein ramenbowl creamyrice tunamelt eggsalad blt".split(" "));
+const NOSTOVE = new Set("oatspb oatspbj oatsapple oatschoc oatsberry parfait yogurtbowl pbtoast antslog appledippers trailmix rollups tunasalad chickensalad cuketomato greeksalad gazpacho honeyhummus redpepperhummus hummus smoothie mugcake tzatziki caesarwrap orzosalad".split(" "));
+const CARBY = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough piecrust flour sugar potatoes sweetpot instpot fries cpotatoes cyams cereal oats crackers chips pancake cornbread cornmeal masa grits honey syrup juice bananas raisins driedfruit condmilk pudding vwafers graham browniemix muffinmix stuffingmix hamhelper granola cfruit applesauce jelly bbq brownsugar molasses wonton phyllo".split(" "));
+const KETO_EXTRA = new Set("blackbeans pintocan kidney refried chickpeas pinto lentils butterbeans blackeyed blackeyedcan corn frozcorn creamedcorn hominy frozpeas cpeas mixedveg mixedcan carrots ccarrots apples cranberries cranberrysauce watermelon chili".split(" "));
+const SWEET = new Set("sugar honey syrup juice condmilk pudding brownsugar molasses jelly cranberrysauce vwafers browniemix muffinmix".split(" "));
+const STARCH = new Set("rice brownrice pasta elbow noodles ramen macbox lasagna orzo bread buns hdbuns tortillas corntort pita naan biscuits pizzadough potatoes instpot fries cpotatoes grits masa cornbread hamhelper stuffingmix".split(" "));
+const MEAT = new Set(ITEMS.filter(i=>i.cat==="Meat and protein").map(i=>i.id).concat("cchicken tuna salmon spam chili cbeef cpork meatballs broth bouillon creamsoup csoup ravioli nuggets frozbreast gravymix".split(" ")));
+const PORK = new Set("pork sausage bsausage bacon hotdogs spam groundpork porkshoulder ribs ham spiralham hamhock cpork italsausage".split(" "));
+const ANIMAL = new Set([...(ALLERGENS.milk||[]),...(ALLERGENS.egg||[]),"eggs","honey","mayo"]);
+const WHEAT = new Set(ALLERGENS.wheat||[]), DAIRY = new Set(ALLERGENS.milk||[]);
+const reqAll = (r,set)=>r.groups.some(g=>{ const o=opts(g); return o.length && o.every(x=>set.has(x.id)); });
+const DIETS = [["kids","Kid friendly"],["nostove","No stove needed"],["quick","30 min or less"],["cheap","Under $1 a plate"],["veg","Vegetarian"],["vegan","Vegan"],["gf","Gluten free"],["df","Dairy free"],["lowcarb","Low carb and keto"],["diabetic","Diabetes friendly"],["nopork","No pork"]];
+function diet(r,d){
+  if(d==="kids") return KIDS.has(r.id);
+  if(d==="nostove") return NOSTOVE.has(r.id);
+  if(d==="quick") return r.time<=30;
+  if(d==="cheap") return mealInfo(r).perPlate<1;
+  if(d==="veg") return !reqAll(r,MEAT);
+  if(d==="vegan") return !reqAll(r,MEAT) && !reqAll(r,ANIMAL);
+  if(d==="gf") return !reqAll(r,WHEAT);
+  if(d==="df") return !reqAll(r,DAIRY);
+  if(d==="nopork") return !reqAll(r,PORK);
+  if(d==="lowcarb") return mtype(r)!=="dessert" && !reqAll(r,CARBY) && !reqAll(r,KETO_EXTRA);
+  if(d==="diabetic") return mtype(r)!=="dessert" && !reqAll(r,SWEET) && r.groups.filter(g=>{ const o=opts(g); return o.length && o.every(x=>STARCH.has(x.id)); }).length<=1;
+  return true;
+}
 const pkgs = (o,s)=>Math.max(1, Math.ceil(o.use*s-0.001));
 function mealInfo(r){
   let cost=0; const need=[];
@@ -411,7 +438,7 @@ function Meals(){
   const okList = RECIPES.filter(okMeal);
   const hidden = RECIPES.length - okList.length;
   const mq = S.mq.trim().toLowerCase();
-  let rows = okList.filter(r=>(S.mtype==="all"||(S.mtype==="holiday"?(!!occ(r)&&(S.occ==="all"||occ(r).split(" ").includes(S.occ))):mtype(r)===S.mtype))&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))).map(r=>({r,i:mealInfo(r)}));
+  let rows = okList.filter(r=>(S.mtype==="all"||(S.mtype==="holiday"?(!!occ(r)&&(S.occ==="all"||occ(r).split(" ").includes(S.occ))):mtype(r)===S.mtype))&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))&&S.diets.every(d=>diet(r,d))).map(r=>({r,i:mealInfo(r)}));
   const counts = {ready:0,close:0};
   rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
   if(S.filter==="fancy") rows = rows.filter(x=>x.r.fancy); else if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
@@ -430,6 +457,8 @@ function Meals(){
   <input class="search" id="mq" placeholder="Search ${RECIPES.length} meals" value="${S.mq.replace(/"/g,"&quot;")}">
   <div class="chips scroll" style="margin-top:12px">${MEAL_TYPES.map(([id,l])=>'<button class="chip '+(S.mtype===id?"on":"")+'" data-act="mtype" data-t="'+id+'">'+l+'</button>').join("")}</div>
   ${S.mtype==="holiday"?'<div class="chips scroll" style="margin-top:8px">'+OCCASIONS.map(([id,l])=>'<button class="chip '+(S.occ===id?"on":"")+'" data-act="occ" data-o="'+id+'">'+l+'</button>').join("")+'</div>':""}
+  <div class="chips scroll" style="margin-top:8px">${DIETS.map(([id,l])=>'<button class="chip sm '+(S.diets.includes(id)?"on":"")+'" data-act="diet" data-g="'+id+'">'+l+'</button>').join("")}</div>
+  ${S.diets.some(d=>d==="lowcarb"||d==="diabetic")?'<p class="hint" style="margin-top:8px">Ideas only. Check with your doctor or dietitian about what is right for you.</p>':""}
   <select id="cuisine" class="cuisine">${["all",...CUISINES].map(c=>'<option value="'+c+'" '+(S.cuisine===c?"selected":"")+'>'+(c==="all"?"All cuisines":c)+'</option>').join("")}</select>
   <div class="seg">
     <button class="${S.filter==="ready"?"on":""}" data-act="filter" data-f="ready">Ready (${counts.ready})</button>
@@ -618,6 +647,7 @@ document.addEventListener("click", e=>{
   if(a==="addweek"){ let n=0; DAYS.forEach(([d])=>(S.week[d]||[]).forEach(id=>{ const key=d+":"+id; if(!S.added[key]){ const r=RECIPES.find(x=>x.id===id); if(r){ n+=addMealToList(r,k()); S.added[key]=true; } } })); toast(n?"Added "+n+" items to your list":"Everything is already on your list"); }
   if(a==="unplan"){ const [d,id]=b.dataset.k.split(":"); S.week[d]=(S.week[d]||[]).filter(x=>x!==id); delete S.added[b.dataset.k]; }
   if(a==="clearweek"){ S.week={}; S.added={}; toast("Week cleared"); }
+  if(a==="diet"){ const g=b.dataset.g; S.diets=S.diets.includes(g)?S.diets.filter(x=>x!==g):[...S.diets,g]; if(S.diets.length) S.filter="all"; }
   if(a==="mtype"){ S.mtype=b.dataset.t; if(S.mtype==="holiday") S.filter="all"; }
   if(a==="occ"){ S.occ=b.dataset.o; }
   if(a==="filter"){ S.filter=b.dataset.f; }
