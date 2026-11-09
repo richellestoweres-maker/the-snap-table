@@ -306,3 +306,7 @@ eggcurry:{list:["8 eggs","1 medium onion, diced","1 can (14 oz) diced tomatoes",
 coconutcurry:{list:["1 1/2 lb chicken thighs, sliced (or 1 block tofu)","1 can (13.5 oz) coconut milk","1 tablespoon curry powder","1 bell pepper, sliced","1 tablespoon soy sauce","1 teaspoon sugar","Juice of 1 lime","1 tablespoon oil","1 1/2 cups rice, with 3 cups water"],
  steps:["Cook the rice: bring the rice and water to a boil, cover and simmer on low 18 minutes.","Brown the chicken and pepper in the oil over medium high, 6 minutes.","Stir in the curry powder for 1 minute.","Add the coconut milk, soy sauce and sugar and simmer 10 minutes.","Stir in the lime juice and serve over rice."]}
 });
+Object.assign(FIX, {
+icecreambag:{list:["1 cup milk or heavy cream (or evaporated milk) per person","2 tablespoons sugar per person","1/4 teaspoon vanilla per person","1/2 cup salt (rock salt or table salt) per person","About 4 cups ice per person","1 small zip bag and 1 gallon zip bag per person","A towel or gloves for cold hands"],
+ steps:["In the small zip bag, mix 1 cup milk, 2 tablespoons sugar and 1/4 teaspoon vanilla. Squeeze out the air and seal well.","Fill the gallon bag halfway with ice and pour in 1/2 cup salt.","Put the small bag inside the big bag and seal it.","Wrap in a towel and shake for 5 to 10 minutes until the milk turns into soft ice cream.","Take out the small bag, rinse off the salty water and eat it right from the bag."],tip:"The salt makes the ice extra cold. That is what freezes the cream."}
+});
