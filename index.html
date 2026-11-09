@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The SNAP Table</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --cream:#FBF6EE; --card:#FFFFFF; --ink:#2B2522; --soft:#6E625A; --line:#EADFD0;
@@ -124,13 +124,48 @@ nav button{font-size:11px}
 .cuisine{width:100%;margin-top:10px}
 .tag.world{background:#E3ECF7;color:#2E4E7A}
 .tag.holiday{background:#FBE3E3;color:#9A2B2B}
+
+/* Refined look */
+:root{--cream:#F6F4EF;--card:#FFFFFF;--ink:#1E1C1A;--soft:#76706A;--line:#E7E2DA;--tomato:#B4533A;--tomato-d:#963F2A;--green:#2C4A3E;--green-l:#E8EEEA;--mustard:#B98A3E;--mustard-l:#F4EDE1;--red-l:#F5E6E1}
+html,body{background:#ECE9E3;font-family:"DM Sans",system-ui,sans-serif}
+h1{font-size:30px;letter-spacing:-.01em;font-weight:600}
+h2{font-weight:600}
+.logo b span{color:var(--green)}
+.card,.stat,.store{border-radius:14px;box-shadow:0 1px 2px rgba(30,28,26,.04)}
+.meal{border-radius:14px;padding:10px;gap:14px;box-shadow:0 1px 2px rgba(30,28,26,.04)}
+.meal b{font-weight:600}
+.thumb{width:88px;height:88px;border-radius:10px;object-fit:cover;flex:none;background:#EFECE6}
+.hero{display:block;width:calc(100% + 36px);max-width:none;margin:8px -18px 16px;height:250px;object-fit:cover;background:#EFECE6}
+.big{border-radius:14px;padding:16px}
+.big.t{background:var(--green)}
+.big.g,.big.m{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.big .ic{background:rgba(255,255,255,.14);border-radius:12px}
+.big.g .ic,.big.m .ic{background:var(--green-l);color:var(--green)}
+.big .ic svg,.link .ic svg{width:24px;height:24px}
+.big b{font-weight:600}
+nav{border-top:1px solid var(--line)}
+nav button{font-weight:600;font-size:11px}
+nav button .i svg{width:22px;height:22px}
+nav button.on{color:var(--green)}
+.seg button{font-weight:600}
+.seg button.on{background:var(--green)}
+.chip{border-width:1px;font-weight:500;font-size:14px;padding:8px 14px}
+.chip.on{background:var(--ink);border-color:var(--ink)}
+.tag{font-weight:600;border-radius:6px;font-size:11px;letter-spacing:.02em}
+.tag.ready{background:var(--green-l);color:var(--green)}
+.stat b{color:var(--ink);font-weight:600}
+.link .ic{background:var(--green-l);color:var(--green)}
+.btn{font-weight:600;border-radius:12px}
+.btn.t{background:var(--green)}
+.price b{color:var(--ink);font-weight:600}
+.note{background:#F1EDE5}
 </style>
 </head>
 <body>
 <div class="app">
   <header>
     <div class="logo">
-      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#C8553D"/><circle cx="20" cy="20" r="12.5" fill="#FBF6EE"/><circle cx="20" cy="20" r="8" fill="#E9B44C" opacity=".55"/><path d="M27 9v22M25 9v6M29 9v6M25 15h4" stroke="#2F5D50" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#2C4A3E"/><circle cx="20" cy="20" r="12.5" fill="#FBF6EE"/><circle cx="20" cy="20" r="8" fill="#E9B44C" opacity=".55"/><path d="M27 9v22M25 9v6M29 9v6M25 15h4" stroke="#2F5D50" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
       <b>The <span>SNAP</span> Table</b>
     </div>
   </header>
@@ -139,7 +174,8 @@ nav button{font-size:11px}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=227"></script>
+<script src="photos.js?v=1"></script>
+<script src="data.js?v=228"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -168,6 +204,24 @@ function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,
 
 /* ---------- HELPERS ---------- */
 const $ = s=>document.querySelector(s);
+const SV = p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+const ICONS = {
+  home: SV('<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>'),
+  pantry: SV('<path d="M8 3h8v3H8z"/><path d="M7 6h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M5 12h14"/>'),
+  meals: SV('<path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/>'),
+  scratch: SV('<path d="M12 14v7"/><path d="M12 14c-3.5 0-6-4-6-7.5a6 6 0 0 1 12 0C18 10 15.5 14 12 14z"/><path d="M9.5 4c0 3.5 1 7 2.5 10M14.5 4c0 3.5-1 7-2.5 10"/>'),
+  list: SV('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>'),
+  find: SV('<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>'),
+  box: SV('<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>'),
+  cart: SV('<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h12l2-8H6"/>'),
+  heart: SV('<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/>'),
+  phone: SV('<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/>'),
+  card: SV('<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19"/>')
+};
+const photo = (r,w)=> (typeof PHOTOS!=="undefined" && PHOTOS[r.id]) ? "https://images.pexels.com/photos/"+PHOTOS[r.id]+"/pexels-photo-"+PHOTOS[r.id]+".jpeg?auto=compress&cs=tinysrgb&w="+w : "";
+const thumb = r=> photo(r,240) ? '<img class="thumb" loading="lazy" alt="" src="'+photo(r,240)+'">' : '<span class="plate">'+r.e+'</span>';
+const hero = r=> photo(r,900) ? '<img class="hero" alt="" src="'+photo(r,900)+'">' : "";
+
 const money = n=>"$"+n.toFixed(2);
 const has = id=>S.pantry.includes(id);
 const storeName = id=>STORES.find(s=>s.id===id).name;
@@ -251,9 +305,9 @@ function Home(){
     ${S.asked?`<div class="row between" style="margin-top:14px"><div><div class="label">Allergies</div><div class="hint">${allergyNames()||"None"}</div></div><button class="chip" data-act="editallergy">Edit</button></div>`:""}
   </div>
 
-  <button class="big t" data-act="goto" data-tab="meals"><span class="ic">🍲</span><span><b>Cook from my pantry</b><small>${ready} meal${ready===1?"":"s"} ready with what you have</small></span></button>
-  <button class="big g" data-act="box"><span class="ic">📦</span><span><b>Got a pantry box?</b><small>Add the usual food bank items in one tap</small></span></button>
-  <button class="big m" data-act="goto" data-tab="scratch"><span class="ic">🥖</span><span><b>Make it from scratch</b><small>Tortillas, bread, pizza dough and more</small></span></button>
+  <button class="big t" data-act="goto" data-tab="meals"><span class="ic">${ICONS.meals}</span><span><b>Cook from my pantry</b><small>${ready} meal${ready===1?"":"s"} ready with what you have</small></span></button>
+  <button class="big g" data-act="box"><span class="ic">${ICONS.box}</span><span><b>Got a pantry box?</b><small>Add the usual food bank items in one tap</small></span></button>
+  <button class="big m" data-act="goto" data-tab="scratch"><span class="ic">${ICONS.scratch}</span><span><b>Make it from scratch</b><small>Tortillas, bread, pizza dough and more</small></span></button>
 
   <div class="stats">
     <div class="stat"><b>${S.pantry.length}</b><span>in my pantry</span></div>
@@ -311,7 +365,7 @@ function Meals(){
   </div>
   ${rows.length ? rows.map(({r,i})=>`
     <button class="meal" data-act="open" data-id="${r.id}">
-      <span class="plate">${r.e}</span>
+      ${thumb(r)}
       <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span>${r.fancy?'<span class="tag fancy">Fancy for less</span>':""}${occ(r)?'<span class="tag holiday">'+occ(r).split(" ").map(o=>OCC_NAMES[o]).join(", ")+'</span>':""}${cuisine(r)!=="American"?'<span class="tag world">'+cuisine(r)+'</span>':""}${tagFor(i)}<span class="tag cost">${r.time} min</span></span>
       <span class="price"><b>${money(i.perPlate)}</b><span>a plate</span></span>
     </button>`).join("") : empty}`;
@@ -327,8 +381,8 @@ function MealDetail(){
   const r = RECIPES.find(x=>x.id===S.meal); const i = mealInfo(r);
   return `
   <button class="back" data-act="back">‹ Meals</button>
-  <div class="row" style="margin-top:6px"><span class="plate" style="width:64px;height:64px;font-size:32px">${r.e}</span>
-    <div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Feeds ${S.family} · ${r.time} min</p></div></div>
+  ${hero(r)}
+  <div class="row" style="margin-top:6px"><div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Feeds ${S.family} · ${r.time} min</p></div></div>
   <div class="stats" style="margin-top:14px">
     <div class="stat"><b>${money(i.perPlate)}</b><span>a plate</span></div>
     <div class="stat"><b>${i.need.length?money(i.buy):"$0"}</b><span>to buy at ${storeName(S.store)}</span></div>
@@ -349,7 +403,7 @@ function Scratch(){
   <p class="sub">Make it yourself for a lot less.</p>
   ${rows.map(({r,i})=>`
     <button class="meal" data-act="sopen" data-id="${r.id}">
-      <span class="plate">${r.e}</span>
+      ${thumb(r)}
       <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span><span class="tag ready">Save ${money(i.save)}</span><span class="tag cost">${r.time} min</span></span>
       <span class="price"><b>${money(i.cost)}</b><span>vs ${money(i.store)}</span></span>
     </button>`).join("")}`;
@@ -359,8 +413,8 @@ function ScratchDetail(){
   const r = SCRATCH.find(x=>x.id===S.scratch); const i = scratchInfo(r);
   return `
   <button class="back" data-act="back">‹ From scratch</button>
-  <div class="row" style="margin-top:6px"><span class="plate" style="width:64px;height:64px;font-size:32px">${r.e}</span>
-    <div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Makes ${r.makesText} · ${r.time} min</p></div></div>
+  ${hero(r)}
+  <div class="row" style="margin-top:6px"><div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Makes ${r.makesText} · ${r.time} min</p></div></div>
   <div class="stats" style="margin-top:14px">
     <div class="stat"><b>${money(i.cost)}</b><span>homemade</span></div>
     <div class="stat"><b>${money(i.store)}</b><span>store bought</span></div>
@@ -402,11 +456,11 @@ function List(){
 
 function Find(){
   const links = [
-    ["🛒","Stores that take SNAP","USDA store finder","https://www.fns.usda.gov/snap/retailer-locator"],
-    ["🥫","Food banks near me","Feeding America","https://www.feedingamerica.org/find-your-local-foodbank"],
-    ["🏠","Pantries and free meals","Search by ZIP code","https://www.findhelp.org/"],
-    ["📞","Call or text 211","Texas help line for food and more","https://www.211texas.org/"],
-    ["💳","My Lone Star Card","Your Texas Benefits","https://www.yourtexasbenefits.com/"]
+    [ICONS.cart,"Stores that take SNAP","USDA store finder","https://www.fns.usda.gov/snap/retailer-locator"],
+    [ICONS.heart,"Food banks near me","Feeding America","https://www.feedingamerica.org/find-your-local-foodbank"],
+    [ICONS.home,"Pantries and free meals","Search by ZIP code","https://www.findhelp.org/"],
+    [ICONS.phone,"Call or text 211","Texas help line for food and more","https://www.211texas.org/"],
+    [ICONS.card,"My Lone Star Card","Your Texas Benefits","https://www.yourtexasbenefits.com/"]
   ];
   return `
   <h1>Find food</h1>
@@ -417,7 +471,7 @@ function Find(){
 }
 
 /* ---------- RENDER ---------- */
-const TABS = [["home","🏠","Home"],["pantry","🥫","Pantry"],["meals","🍲","Meals"],["scratch","🥖","Scratch"],["list","📝","List"],["find","📍","Find"]];
+const TABS = [["home",ICONS.home,"Home"],["pantry",ICONS.pantry,"Pantry"],["meals",ICONS.meals,"Meals"],["scratch",ICONS.scratch,"Scratch"],["list",ICONS.list,"List"],["find",ICONS.find,"Find"]];
 function render(top){
   const y = window.scrollY;
   $("#screen").innerHTML = S.meal ? MealDetail() : S.scratch ? ScratchDetail() : ({home:Home,pantry:Pantry,meals:Meals,scratch:Scratch,list:List,find:Find}[S.tab])();
