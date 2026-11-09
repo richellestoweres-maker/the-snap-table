@@ -1,0 +1,25 @@
+{
+  "name": "SNAP Table",
+  "short_name": "SNAP Table",
+  "description": "Low cost meals, pantry and shopping lists for SNAP families.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F1E7",
+  "theme_color": "#3A1520",
+  "icons": [
+    {
+      "src": "Fresh%20Groceries%20in%20a%20Paper%20Sack.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "Fresh%20Groceries%20in%20a%20Paper%20Sack.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
