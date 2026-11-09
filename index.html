@@ -254,7 +254,7 @@ nav .badge{background:var(--mustard)}
 
 <script src="photos.js?v=3"></script>
 <script src="data.js?v=229"></script>
-<script src="fixes.js?v=4"></script>
+<script src="fixes.js?v=5"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -489,7 +489,7 @@ function addButton(need, pickOk){
 // Use rewritten recipes from fixes.js when present
 if(typeof FIX!=="undefined"){ RECIPES.concat(SCRATCH).forEach(r=>{ const f=FIX[r.id]; if(!f) return; if(f.list) r.list=f.list; if(f.steps) r.steps=f.steps; if(f.tip) r.tip=f.tip; }); }
 function scaleLine(l,mult){
-  if(mult===1) return l;
+  if(mult===1 || /per person/i.test(l)) return l;
   const m=l.match(/^(\d+ \d\/\d|\d+\/\d|\d+(?:\.\d+)?)(?= )/); if(!m) return l;
   return frac(unfrac(m[1])*mult)+l.slice(m[1].length);
 }
