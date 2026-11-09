@@ -250,7 +250,7 @@ var PHOTOS = {
   s_alfredo:5411629,
   s_broth:12077976,
   s_corntort:8064385,
-  s_wrappers:8278177,
+  s_wrappers:34912738,
   s_brownies:15033468,
   s_condmilk:7144325,
   s_ranch:7734563,
@@ -408,4 +408,8 @@ var PHOTOS = {
   bananasmoothiebowl: 16096610,
   zucchinibread: 33739660,
   chickenalfredobake: 34474031,
+  strawspinachsalad: 1188749,
+  candiednuts: 35339669,
+  cheesecrisps: 9807276,
+  fruitleather: 36326589,
 };
