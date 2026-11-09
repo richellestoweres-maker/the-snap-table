@@ -138,7 +138,7 @@ nav button{font-size:11px}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=130"></script>
+<script src="data.js?v=202"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -159,8 +159,8 @@ SCRATCH.forEach(r=>{ r.groups = parseIng(r.ing); });
 
 /* ---------- STATE ---------- */
 const KEY = "snaptable.v1";
-let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all"};
-try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:""}); }catch(e){}
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:""};
+try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:"", mq:""}); }catch(e){}
 S.pantry = S.pantry.filter(id=>ITEM[id]);
 Object.keys(S.list).forEach(id=>{ if(!ITEM[id]) delete S.list[id]; });
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved,mtype:S.mtype,cuisine:S.cuisine})); }catch(e){} }
@@ -280,7 +280,8 @@ function Pantry(){
 function Meals(){
   const okList = RECIPES.filter(okMeal);
   const hidden = RECIPES.length - okList.length;
-  let rows = okList.filter(r=>(S.mtype==="all"||mtype(r)===S.mtype)&&(S.cuisine==="all"||cuisine(r)===S.cuisine)).map(r=>({r,i:mealInfo(r)}));
+  const mq = S.mq.trim().toLowerCase();
+  let rows = okList.filter(r=>(S.mtype==="all"||mtype(r)===S.mtype)&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))).map(r=>({r,i:mealInfo(r)}));
   const counts = {ready:0,close:0};
   rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
   if(S.filter==="fancy") rows = rows.filter(x=>x.r.fancy); else if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
@@ -296,6 +297,7 @@ function Meals(){
   <h1>Meals</h1>
   <p class="sub">For ${S.family}, priced at ${storeName(S.store)}.</p>
   ${hidden?`<p class="hint" style="margin-top:4px">Hiding ${hidden} meal${hidden===1?"":"s"} with ${allergyNames().toLowerCase()}.</p>`:""}
+  <input class="search" id="mq" placeholder="Search ${RECIPES.length} meals" value="${S.mq.replace(/"/g,"&quot;")}">
   <div class="chips scroll" style="margin-top:12px">${MEAL_TYPES.map(([id,l])=>'<button class="chip '+(S.mtype===id?"on":"")+'" data-act="mtype" data-t="'+id+'">'+l+'</button>').join("")}</div>
   <select id="cuisine" class="cuisine">${["all",...CUISINES].map(c=>'<option value="'+c+'" '+(S.cuisine===c?"selected":"")+'>'+(c==="all"?"All cuisines":c)+'</option>').join("")}</select>
   <div class="seg">
@@ -419,6 +421,7 @@ function render(top){
   $("#nav").innerHTML = TABS.map(([id,i,l])=>`<button class="${S.tab===id?"on":""}" data-act="goto" data-tab="${id}"><span class="i">${i}</span>${l}${id==="list"&&listCount()?`<span class="badge">${listCount()}</span>`:""}</button>`).join("");
   window.scrollTo(0, top?0:y);
   const q=$("#q"); if(q){ q.oninput=e=>{ S.q=e.target.value; const pos=e.target.selectionStart; render(); const n=$("#q"); n.focus(); n.setSelectionRange(pos,pos); }; }
+  const mqi=$("#mq"); if(mqi){ mqi.oninput=e=>{ S.mq=e.target.value; const pos=e.target.selectionStart; render(); const n=$("#mq"); n.focus(); n.setSelectionRange(pos,pos); }; }
   const bud=$("#budget"); if(bud){ bud.oninput=e=>{ S.budget=e.target.value.replace(/[^0-9.]/g,""); save(); }; }
   const st=$("#store"); if(st){ st.onchange=e=>{ S.store=e.target.value; save(); render(); }; }
   const cu=$("#cuisine"); if(cu){ cu.onchange=e=>{ S.cuisine=e.target.value; save(); render(); }; }
