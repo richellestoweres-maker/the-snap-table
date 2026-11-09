@@ -123,6 +123,7 @@ nav button{font-size:11px}
 .chips.scroll .chip{flex:none}
 .cuisine{width:100%;margin-top:10px}
 .tag.world{background:#E3ECF7;color:#2E4E7A}
+.tag.holiday{background:#FBE3E3;color:#9A2B2B}
 </style>
 </head>
 <body>
@@ -138,7 +139,7 @@ nav button{font-size:11px}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=202"></script>
+<script src="data.js?v=227"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -159,7 +160,7 @@ SCRATCH.forEach(r=>{ r.groups = parseIng(r.ing); });
 
 /* ---------- STATE ---------- */
 const KEY = "snaptable.v1";
-let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:""};
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:"", occ:"all"};
 try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:"", mq:""}); }catch(e){}
 S.pantry = S.pantry.filter(id=>ITEM[id]);
 Object.keys(S.list).forEach(id=>{ if(!ITEM[id]) delete S.list[id]; });
@@ -179,6 +180,7 @@ const pick = g=>opts(g).find(o=>has(o.id))||opts(g)[0];
 const okMeal = r=>r.groups.every(g=>opts(g).length);
 const mtype = r=>r.type||TYPE_OF[r.id]||"dinner";
 const cuisine = r=>r.cuisine||CUISINE_OF[r.id]||"American";
+const occ = r=>r.occasion||(typeof HOLIDAY_OF!=="undefined"&&HOLIDAY_OF[r.id])||"";
 const pkgs = (o,s)=>Math.max(1, Math.ceil(o.use*s-0.001));
 function mealInfo(r){
   let cost=0; const need=[];
@@ -281,7 +283,7 @@ function Meals(){
   const okList = RECIPES.filter(okMeal);
   const hidden = RECIPES.length - okList.length;
   const mq = S.mq.trim().toLowerCase();
-  let rows = okList.filter(r=>(S.mtype==="all"||mtype(r)===S.mtype)&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))).map(r=>({r,i:mealInfo(r)}));
+  let rows = okList.filter(r=>(S.mtype==="all"||(S.mtype==="holiday"?(!!occ(r)&&(S.occ==="all"||occ(r).split(" ").includes(S.occ))):mtype(r)===S.mtype))&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))).map(r=>({r,i:mealInfo(r)}));
   const counts = {ready:0,close:0};
   rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
   if(S.filter==="fancy") rows = rows.filter(x=>x.r.fancy); else if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
@@ -299,6 +301,7 @@ function Meals(){
   ${hidden?`<p class="hint" style="margin-top:4px">Hiding ${hidden} meal${hidden===1?"":"s"} with ${allergyNames().toLowerCase()}.</p>`:""}
   <input class="search" id="mq" placeholder="Search ${RECIPES.length} meals" value="${S.mq.replace(/"/g,"&quot;")}">
   <div class="chips scroll" style="margin-top:12px">${MEAL_TYPES.map(([id,l])=>'<button class="chip '+(S.mtype===id?"on":"")+'" data-act="mtype" data-t="'+id+'">'+l+'</button>').join("")}</div>
+  ${S.mtype==="holiday"?'<div class="chips scroll" style="margin-top:8px">'+OCCASIONS.map(([id,l])=>'<button class="chip '+(S.occ===id?"on":"")+'" data-act="occ" data-o="'+id+'">'+l+'</button>').join("")+'</div>':""}
   <select id="cuisine" class="cuisine">${["all",...CUISINES].map(c=>'<option value="'+c+'" '+(S.cuisine===c?"selected":"")+'>'+(c==="all"?"All cuisines":c)+'</option>').join("")}</select>
   <div class="seg">
     <button class="${S.filter==="ready"?"on":""}" data-act="filter" data-f="ready">Ready (${counts.ready})</button>
@@ -309,7 +312,7 @@ function Meals(){
   ${rows.length ? rows.map(({r,i})=>`
     <button class="meal" data-act="open" data-id="${r.id}">
       <span class="plate">${r.e}</span>
-      <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span>${r.fancy?'<span class="tag fancy">Fancy for less</span>':""}${cuisine(r)!=="American"?'<span class="tag world">'+cuisine(r)+'</span>':""}${tagFor(i)}<span class="tag cost">${r.time} min</span></span>
+      <span class="mt"><b>${r.name}</b><span class="desc">${r.d}</span>${r.fancy?'<span class="tag fancy">Fancy for less</span>':""}${occ(r)?'<span class="tag holiday">'+occ(r).split(" ").map(o=>OCC_NAMES[o]).join(", ")+'</span>':""}${cuisine(r)!=="American"?'<span class="tag world">'+cuisine(r)+'</span>':""}${tagFor(i)}<span class="tag cost">${r.time} min</span></span>
       <span class="price"><b>${money(i.perPlate)}</b><span>a plate</span></span>
     </button>`).join("") : empty}`;
 }
@@ -439,7 +442,8 @@ document.addEventListener("click", e=>{
   if(a==="editallergy"){ S.asked=false; save(); return render(true); }
   if(a==="box"){ let n=0; PANTRY_BOX.forEach(id=>{ if(!has(id)){S.pantry.push(id);n++;} }); toast(n?`Added ${n} pantry box items`:"Already in your pantry"); S.tab="pantry"; save(); return render(true); }
   if(a==="clearpantry"){ S.pantry=[]; toast("Pantry cleared"); }
-  if(a==="mtype"){ S.mtype=b.dataset.t; }
+  if(a==="mtype"){ S.mtype=b.dataset.t; if(S.mtype==="holiday") S.filter="all"; }
+  if(a==="occ"){ S.occ=b.dataset.o; }
   if(a==="filter"){ S.filter=b.dataset.f; }
   if(a==="open"){ S.meal=b.dataset.id; save(); return render(true); }
   if(a==="sopen"){ S.scratch=b.dataset.id; save(); return render(true); }
