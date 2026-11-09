@@ -254,7 +254,7 @@ nav .badge{background:var(--mustard)}
 
 <script src="photos.js?v=3"></script>
 <script src="data.js?v=229"></script>
-<script src="fixes.js?v=3"></script>
+<script src="fixes.js?v=4"></script>
 <script>
 /* ---------- SETUP ---------- */
 const MULT = {aldi:1, kroger:1.3, heb:1.08, walmart:1.05};
@@ -517,7 +517,7 @@ const AMT = {
   grapeleaves:[60,"leaf"], cauliflower:[3,"cup"], pepperoni:[6,"oz"], stringcheese:[12,"string cheese",1], taco:[1,"packet"], bbq:[2,"cup"], ketchup:[2.25,"cup"], mustard:[1.5,"cup"], mayo:[3.5,"cup"], soy:[1.75,"cup"],
   ranch:[2,"cup"], cajun:[24,"tablespoon"], bouillon:[20,"teaspoon"]
 };
-const BASIC_AMT = {oil:"Oil for cooking", salt:"Salt and pepper", garlicp:"Garlic powder", spices:"Spices you like", italian:"Italian seasoning", cinnamon:"Cinnamon", gingerp:"Ground ginger", vinegar:"Vinegar", poultry:"Poultry seasoning", soy:"Soy sauce", mustard:"Mustard", ketchup:"Ketchup", taco:"Taco seasoning", cajun:"Cajun seasoning", currypowder:"Curry powder", sugar:"Sugar", ranch:"Ranch", bbq:"BBQ sauce", mayo:"Mayo"};
+const BASIC_AMT = {oil:"Oil for cooking", salt:"Salt", garlicp:"Garlic powder", spices:"Spices you like", italian:"Italian seasoning", cinnamon:"Cinnamon", gingerp:"Ground ginger", vinegar:"Vinegar", poultry:"Poultry seasoning", soy:"Soy sauce", mustard:"Mustard", ketchup:"Ketchup", taco:"Taco seasoning", cajun:"Cajun seasoning", currypowder:"Curry powder", sugar:"Sugar", ranch:"Ranch", bbq:"BBQ sauce", mayo:"Mayo"};
 const PLURAL = {potato:"potatoes", tomato:"tomatoes", "sweet potato":"sweet potatoes", leaf:"leaves", zucchini:"zucchini", bunch:"bunches", box:"boxes", pouch:"pouches", "string cheese":"string cheese", lb:"lb", oz:"oz", naan:"naan", "jalapeño":"jalapeños"};
 const STEP_KW = {flour:"flour", sugar:"sugar", brownsugar:"brown sugar", butter:"butter", eggs:"eggs?", milk:"milk", oats:"oats", cocoa:"cocoa", pb:"peanut butter", honey:"honey", rice:"rice", broth:"broth", heavycream:"cream", cornmeal:"cornmeal", oil:"oil", soy:"soy sauce", mayo:"mayo", bakingpowder:"baking powder", pancake:"pancake mix", powdermilk:"powdered milk", vinegar:"vinegar", cinnamon:"cinnamon", vanilla:"vanilla"};
 function frac(x){ const w=Math.floor(x+1e-6), f=Math.round((x-w)*4)/4, F={0.25:"1/4",0.5:"1/2",0.75:"3/4"}[f]||""; if(f>=1) return String(w+1); return (w?w+(F?" "+F:""):F)||"0"; }
