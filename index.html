@@ -50,6 +50,8 @@ select{height:44px;border-radius:12px;border:1px solid var(--line);background:va
 .big .ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:26px;flex:none}
 .big b{display:block;font-size:18px} .big small{opacity:.9;font-size:14px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stats.stats3{grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stats3 .stat b{font-size:20px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
 .stat b{font-family:Fraunces,serif;font-size:30px;color:var(--green);display:block}
 .stat span{font-size:13px;color:var(--soft);font-weight:700}
@@ -569,9 +571,10 @@ function MealDetail(){
   ${hero(r)}
   <div class="row" style="margin-top:6px"><div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Feeds ${S.family} · ${r.time} min</p></div></div>
   <div class="card" style="margin-top:14px"><div class="label" style="margin-bottom:10px">Add to my week</div><div class="chips">${DAYS.map(([d,s])=>'<button class="chip '+((S.week[d]||[]).includes(r.id)?"on":"")+'" data-act="plan" data-d="'+d+'">'+s+'</button>').join("")}</div></div>
-  <div class="stats" style="margin-top:14px">
+  <div class="stats stats3" style="margin-top:14px">
+    <div class="stat"><b>${money(i.cost)}</b><span>meal cost</span></div>
     <div class="stat"><b>${money(i.perPlate)}</b><span>a plate</span></div>
-    <div class="stat"><b>${i.need.length?money(i.buy):"$0"}</b><span>to buy at ${storeName(S.store)}</span></div>
+    <div class="stat"><b>${i.need.length?money(i.buy):"✓"}</b><span>${i.need.length?"still to buy":"you have it all"}</span></div>
   </div>
   ${r.tip?`<div class="note" style="margin-top:12px"><b>Money saver:</b> ${r.tip}</div>`:""}
   <h2>Ingredients</h2>
