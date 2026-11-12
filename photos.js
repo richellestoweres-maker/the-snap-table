@@ -528,4 +528,6 @@ var PHOTOS = {
   swedishmeatballs: 5720891,
   lemonbars: 9569396,
   salisburysteak: 31652926,
+  flan: 35020131,
+  mangostickyrice: 38108690,
 };
