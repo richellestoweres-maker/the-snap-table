@@ -707,6 +707,10 @@ function Find(){
 
 /* ---------- RENDER ---------- */
 const TABS = [["home",ICONS.home,"Home"],["pantry",ICONS.pantry,"Pantry"],["meals",ICONS.meals,"Meals"],["scratch",ICONS.scratch,"Scratch"],["list",ICONS.plan,"Plan"],["find",ICONS.find,"Find"]];
+let BACKY=0;
+function openDetail(){ if(!S.meal&&!S.scratch){ BACKY=window.scrollY; try{ history.pushState({detail:1},""); }catch(e){} } }
+function closeDetail(){ S.meal=null; S.scratch=null; render(true); window.scrollTo(0,BACKY); requestAnimationFrame(()=>window.scrollTo(0,BACKY)); }
+window.addEventListener("popstate",()=>{ if(S.meal||S.scratch) closeDetail(); });
 function render(top){
   const y = window.scrollY;
   $("#screen").innerHTML = S.meal ? MealDetail() : S.scratch ? ScratchDetail() : ({home:Home,pantry:Pantry,meals:Meals,scratch:Scratch,list:List,find:Find}[S.tab])();
@@ -741,9 +745,9 @@ document.addEventListener("click", e=>{
   if(a==="mtype"){ S.mtype=b.dataset.t; if(S.mtype==="holiday") S.filter="all"; }
   if(a==="occ"){ S.occ=b.dataset.o; }
   if(a==="filter"){ S.filter=b.dataset.f; }
-  if(a==="open"){ S.meal=b.dataset.id; save(); return render(true); }
-  if(a==="sopen"){ S.scratch=b.dataset.id; save(); return render(true); }
-  if(a==="back"){ S.meal=null; S.scratch=null; return render(true); }
+  if(a==="open"){ openDetail(); S.meal=b.dataset.id; save(); return render(true); }
+  if(a==="sopen"){ openDetail(); S.scratch=b.dataset.id; save(); return render(true); }
+  if(a==="back"){ if(history.state&&history.state.detail) return history.back(); return closeDetail(); }
   if(a==="addlist"){
     const isS = !!S.scratch;
     const r = isS ? SCRATCH.find(x=>x.id===S.scratch) : RECIPES.find(x=>x.id===S.meal);
