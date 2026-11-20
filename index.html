@@ -93,6 +93,9 @@ ol.steps{padding-left:22px}
 .ingl{list-style:none;padding:0;margin:0}
 .ingl li{padding:9px 0;border-bottom:1px solid var(--line);line-height:1.4}
 .ingl li:last-child{border-bottom:0}
+.gw{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.gw:last-child{border-bottom:0}
+.gw b{white-space:nowrap;font-size:13px}
 .ingl small{color:var(--soft)}
 ol.steps li{margin:10px 0;line-height:1.5}
 .compare{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -260,8 +263,8 @@ nav .badge{background:var(--mustard)}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="photos.js?v=13"></script>
-<script src="data.js?v=238"></script>
+<script src="photos.js?v=14"></script>
+<script src="data.js?v=239"></script>
 <script src="fixes.js?v=8"></script>
 <script>
 /* ---------- SETUP ---------- */
@@ -584,8 +587,12 @@ function MealDetail(){
   <h2>What to buy</h2>
   <div class="card" style="padding:4px 16px">${ingRows(r,k())}</div>
   ${addButton(i.need)}
+  ${goesWithHtml(r)}
   <button class="btn g" data-act="made">I made this</button>`;
 }
+const SIDE_PAIR={"Tex Mex":["Tex Mex","Mexican"],"Mexican":["Mexican","Tex Mex"],"BBQ":["BBQ","Southern and Cajun","American"],"Southern and Cajun":["Southern and Cajun","BBQ","American"],"American":["American","Southern and Cajun","BBQ"],"Chinese":["Chinese","Japanese","Korean","Thai"],"Japanese":["Japanese","Chinese","Korean"],"Korean":["Korean","Chinese","Japanese"],"Thai":["Thai","Chinese"],"Indian":["Indian","Mediterranean"],"Italian":["Italian","Mediterranean","French"],"Greek":["Greek","Mediterranean"],"Mediterranean":["Mediterranean","Greek","Italian"],"French":["French","Italian","American"]};
+function goesWith(r){ if(!["dinner","lunch"].includes(mtype(r))) return []; const pref=SIDE_PAIR[cuisine(r)]||["American"]; const h=s=>{let n=0; for(const c of s) n=(n*31+c.charCodeAt(0))|0; return n>>>0;}; const rank=x=>{const i=pref.indexOf(cuisine(x)); return (i<0?9:i)*1e7+(h(r.id+x.id)%1e7);}; return RECIPES.filter(x=>mtype(x)==="side"&&x.id!==r.id&&okMeal(x)).sort((a,b)=>rank(a)-rank(b)).slice(0,3); }
+function goesWithHtml(r){ const g=goesWith(r); if(!g.length) return ""; return '<h2>Goes great with</h2><div class="card" style="padding:2px 16px">'+g.map(x=>'<button class="gw" data-act="open" data-id="'+x.id+'"><span>'+x.e+' '+x.name+'</span><b>'+money(mealInfo(x).perPlate)+' a plate</b></button>').join("")+'</div>'; }
 
 function Scratch(){
   const rows = SCRATCH.filter(okMeal).map(r=>({r,i:scratchInfo(r)}));
@@ -708,8 +715,9 @@ function Find(){
 /* ---------- RENDER ---------- */
 const TABS = [["home",ICONS.home,"Home"],["pantry",ICONS.pantry,"Pantry"],["meals",ICONS.meals,"Meals"],["scratch",ICONS.scratch,"Scratch"],["list",ICONS.plan,"Plan"],["find",ICONS.find,"Find"]];
 let BACKY=0;
-function openDetail(){ if(!S.meal&&!S.scratch){ BACKY=window.scrollY; try{ history.pushState({detail:1},""); }catch(e){} } }
-function closeDetail(){ S.meal=null; S.scratch=null; render(true); window.scrollTo(0,BACKY); requestAnimationFrame(()=>window.scrollTo(0,BACKY)); }
+let DSTACK=[];
+function openDetail(){ if(!S.meal&&!S.scratch){ BACKY=window.scrollY; DSTACK=[]; } else { DSTACK.push({meal:S.meal,scratch:S.scratch}); } try{ history.pushState({detail:1},""); }catch(e){} }
+function closeDetail(){ if(DSTACK.length){ const p=DSTACK.pop(); S.meal=p.meal; S.scratch=p.scratch; return render(true); } S.meal=null; S.scratch=null; render(true); window.scrollTo(0,BACKY); requestAnimationFrame(()=>window.scrollTo(0,BACKY)); }
 window.addEventListener("popstate",()=>{ if(S.meal||S.scratch) closeDetail(); });
 function render(top){
   const y = window.scrollY;
