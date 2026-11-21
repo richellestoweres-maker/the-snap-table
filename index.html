@@ -249,6 +249,12 @@ nav .badge{background:var(--mustard)}
 .back{color:var(--burg)}
 .chip.sm{font-size:13px;padding:6px 12px}
 
+/* Planner */
+.pslot{border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
+.pslothead{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--soft)}
+.pslot .pmeal{border-top:0;margin-top:4px;padding:4px 0}
+.pslothead .mini{background:transparent;color:var(--burg);border:1.5px solid var(--line)}
+.pickbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 /* Centered layout */
 header{position:relative;justify-content:center;}
 header .logo{flex-direction:column;gap:6px;text-align:center;}
@@ -294,11 +300,11 @@ SCRATCH.forEach(r=>{ r.groups = parseIng(r.ing); });
 
 /* ---------- STATE ---------- */
 const KEY = "snaptable.v1";
-let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:"", occ:"all", diets:[], week:{}, added:{}, uses:{}, lview:"week"};
+let S = {tab:"home", pantry:[], family:4, budget:"", store:"aldi", list:{}, done:[], filter:"ready", q:"", meal:null, scratch:null, allergies:[], asked:false, saved:0, mtype:"all", cuisine:"all", mq:"", occ:"all", diets:[], week:{}, added:{}, uses:{}, lview:"week", plan:{}, padd:{}, pday:"mon", pslot:"dinner", target:null};
 try{ const saved = JSON.parse(localStorage.getItem(KEY)||"null"); if(saved) Object.assign(S, saved, {meal:null, scratch:null, q:"", mq:""}); }catch(e){}
 S.pantry = S.pantry.filter(id=>ITEM[id]);
 Object.keys(S.list).forEach(id=>{ if(!ITEM[id]) delete S.list[id]; });
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved,mtype:S.mtype,cuisine:S.cuisine,diets:S.diets,week:S.week,added:S.added,uses:S.uses,lview:S.lview})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({pantry:S.pantry,family:S.family,budget:S.budget,store:S.store,list:S.list,done:S.done,filter:S.filter,tab:S.tab,allergies:S.allergies,asked:S.asked,saved:S.saved,mtype:S.mtype,cuisine:S.cuisine,diets:S.diets,week:S.week,added:S.added,plan:S.plan,padd:S.padd,pday:S.pday,uses:S.uses,lview:S.lview})); }catch(e){} }
 
 /* ---------- HELPERS ---------- */
 const $ = s=>document.querySelector(s);
@@ -431,7 +437,6 @@ function Home(){
   </div>
 
   <button class="big t" data-act="goto" data-tab="meals"><span class="ic">${ICONS.meals}</span><span><b>Cook from my pantry</b><small>${ready} meal${ready===1?"":"s"} ready with what you have</small></span></button>
-  <button class="big g" data-act="box"><span class="ic">${ICONS.box}</span><span><b>Got a pantry box?</b><small>Add the usual food bank items in one tap</small></span></button>
   <button class="big m" data-act="goto" data-tab="scratch"><span class="ic">${ICONS.scratch}</span><span><b>Make it from scratch</b><small>Tortillas, bread, pizza dough and more</small></span></button>
 
   <div class="stats">
@@ -475,6 +480,7 @@ function Meals(){
     ? `<div class="empty"><b>Nothing ready yet</b>Add what you have to your pantry, or check meals that need 1 or 2 things.<button class="btn g" data-act="goto" data-tab="pantry">Add to my pantry</button></div>`
     : `<div class="empty"><b>Nothing here yet</b>Try another tab.</div>`;
   return `
+  ${S.target?`<div class="note pickbar"><span>Choose a meal for <b>${dayName(S.target.d)} ${slotName(S.target.s).toLowerCase()}</b></span><button class="mini" data-act="canceltarget">Cancel</button></div>`:""}
   <h1>Meals</h1>
   <p class="sub">For ${S.family}, priced at ${storeName(S.store)}.</p>
   ${hidden?`<p class="hint" style="margin-top:4px">Hiding ${hidden} meal${hidden===1?"":"s"} with ${allergyNames().toLowerCase()}.</p>`:""}
@@ -575,13 +581,23 @@ function amtList(r,mult){
   }).join("");
 }
 
+function planCard(r,i){
+  const d=S.pday||"mon", s=S.pslot||slotFor(r);
+  const inPlan=planned(d,s).includes(r.id);
+  const tot=r.groups.filter(g=>!isBasic(g)).length, need=i.need.length;
+  return `<div class="card planbox" style="margin-top:14px"><div class="label" style="margin-bottom:10px">Add to my week</div>
+  <div class="chips">${DAYS.map(([id,sh])=>'<button class="chip '+(d===id?"on":"")+'" data-act="pday" data-d="'+id+'">'+sh+'</button>').join("")}</div>
+  <div class="chips" style="margin-top:8px">${SLOTS.map(([id,l])=>'<button class="chip '+(s===id?"on":"")+'" data-act="pslot" data-s="'+id+'">'+l+'</button>').join("")}</div>
+  <p class="hint" style="margin:10px 0">You have ${tot-need} of ${tot} ingredients. ${need?need+" go"+(need===1?"es":"")+" on your shopping list.":"Nothing to buy."}</p>
+  <button class="btn ${inPlan?"o":"t"}" data-act="addplan" style="margin:0">${inPlan?"Remove from "+dayName(d)+" "+slotName(s).toLowerCase():"Add to "+dayName(d)+" "+slotName(s).toLowerCase()}</button></div>`;
+}
 function MealDetail(){
   const r = RECIPES.find(x=>x.id===S.meal); const i = mealInfo(r);
   return `
   <button class="back" data-act="back">‹ Meals</button>
   ${hero(r)}
   <div class="row" style="margin-top:6px"><div><h1 style="margin:0">${r.name}</h1><p class="sub">${r.d}</p><p class="hint">Feeds ${S.family} · ${r.time} min</p></div></div>
-  <div class="card" style="margin-top:14px"><div class="label" style="margin-bottom:10px">Add to my week</div><div class="chips">${DAYS.map(([d,s])=>'<button class="chip '+((S.week[d]||[]).includes(r.id)?"on":"")+'" data-act="plan" data-d="'+d+'">'+s+'</button>').join("")}</div></div>
+  ${planCard(r,i)}
   <div class="stats stats3" style="margin-top:14px">
     <div class="stat"><b>${money(i.cost)}</b><span>meal cost</span></div>
     <div class="stat"><b>${money(i.perPlate)}</b><span>a plate</span></div>
@@ -637,7 +653,24 @@ function ScratchDetail(){
   <button class="btn g" data-act="smade">I made this</button>`;
 }
 
-const DAYS = [["mon","Mon","Monday"],["tue","Tue","Tuesday"],["wed","Wed","Wednesday"],["thu","Thu","Thursday"],["fri","Fri","Friday"],["sat","Sat","Saturday"],["sun","Sun","Sunday"]];
+const DAYS = [["mon","Mon","Monday"],["tue","Tue","Tuesday"],["wed","Wed","Wednesday"],["thu","Thu","Thursday"],["fri","Fri","Friday"]];
+const SLOTS = [["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"],["snack","Snacks"],["dessert","Desserts"]];
+const dayName = d=>DAYS.find(x=>x[0]===d)[2];
+const slotName = s=>SLOTS.find(x=>x[0]===s)[1];
+function slotFor(r){ const t=mtype(r); return SLOTS.some(x=>x[0]===t)?t:"dinner"; }
+function planned(d,s){ return (S.plan[d]&&S.plan[d][s])||[]; }
+function addPlanned(d,s,r){
+  const key=d+"|"+s+"|"+r.id; if(S.padd[key]) return 0;
+  const got=[];
+  mealInfo(r).need.forEach(g=>{ const o=pick(g); const u=o.use*k(); S.uses[o.id]=(S.uses[o.id]||0)+u; S.list[o.id]=Math.max(1, Math.ceil(S.uses[o.id]-0.001)); got.push([o.id,u]); });
+  S.padd[key]=got; return got.length;
+}
+function removePlanned(key){
+  (S.padd[key]||[]).forEach(([id,u])=>{ if(S.list[id]==null) return; S.uses[id]=(S.uses[id]||0)-u; if(S.uses[id]<=0.001){ delete S.list[id]; delete S.uses[id]; S.done=S.done.filter(x=>x!==id); } else S.list[id]=Math.max(1, Math.ceil(S.uses[id]-0.001)); });
+  delete S.padd[key];
+}
+function planMeal(d,s,r){ S.plan[d]=S.plan[d]||{}; const w=S.plan[d][s]||[]; if(!w.includes(r.id)) S.plan[d][s]=[...w,r.id]; return addPlanned(d,s,r); }
+function unplanMeal(key){ const [d,s,id]=key.split("|"); if(S.plan[d]&&S.plan[d][s]) S.plan[d][s]=S.plan[d][s].filter(x=>x!==id); removePlanned(key); }
 const FRUITS = ["bananas","apples","limes","lemons","watermelon","avocado","cranberries"].concat(typeof EXTRA_FRUITS!=="undefined"?EXTRA_FRUITS:[]);
 const BREADS = ["bread","buns","hdbuns","tortillas","corntort","pita","naan","biscuits","pizzadough","piecrust"].concat(typeof EXTRA_BREADS!=="undefined"?EXTRA_BREADS:[]);
 const AISLES = ["Fruits","Vegetables","Meat","Dairy and eggs","Breads","Baking aisle","Canned goods","Pasta, rice and grains","Condiments and spices","International","Frozen","Garden","Other"];
@@ -666,23 +699,23 @@ function listSeg(){
   return `<div class="seg"><button class="${S.lview!=="shop"?"on":""}" data-act="lview" data-v="week">This week</button><button class="${S.lview==="shop"?"on":""}" data-act="lview" data-v="shop">Shopping list (${listCount()})</button></div>`;
 }
 function Week(){
-  const total = DAYS.reduce((a,[d])=>a+(S.week[d]||[]).length,0);
-  let html = `<h1>My week</h1><p class="sub">Plan meals, then build your list.</p>${listSeg()}`;
-  if(!total) return html + `<div class="card emptycard"><span class="emptyic">${ICONS.plan}</span><b>Plan your week</b><p>Turn meal ideas into a simple plan for the week. Save time, spend less, and make mealtimes easy.</p><button class="btn t" data-act="goto" data-tab="meals">Browse meals →</button></div>`;
+  let html = `<h1>My week</h1><p class="sub">Pick meals for each day. What you need goes on your list.</p>${listSeg()}`;
   DAYS.forEach(([d,short,long])=>{
-    const ids = S.week[d]||[];
-    html += `<div class="card day"><div class="label">${long}</div>${ids.length?"":'<p class="hint" style="margin-top:4px">No meals yet</p>'}` + ids.map(id=>{
-      const r = RECIPES.find(x=>x.id===id); if(!r) return "";
-      const key = d+":"+id; const added = S.added[key];
-      return `<div class="pmeal">${pthumb(r)}<button class="pname" data-act="open" data-id="${id}">${r.name}</button><button class="mini ${added?"done":""}" data-act="addmeal" data-k="${key}">${added?"Added ✓":"Add ingredients"}</button><button class="x" data-act="unplan" data-k="${key}" aria-label="Remove">×</button></div>`;
+    html += `<div class="card day"><div class="label">${long}</div>` + SLOTS.map(([s,l])=>{
+      const ids=planned(d,s);
+      return `<div class="pslot"><div class="pslothead"><span>${l}</span><button class="mini" data-act="pickfor" data-d="${d}" data-s="${s}">+ Add</button></div>` + ids.map(id=>{
+        const r = RECIPES.find(x=>x.id===id); if(!r) return "";
+        return `<div class="pmeal">${pthumb(r)}<button class="pname" data-act="open" data-id="${id}">${r.name}</button><button class="x" data-act="unplan" data-k="${d}|${s}|${id}" aria-label="Remove">×</button></div>`;
+      }).join("") + `</div>`;
     }).join("") + `</div>`;
   });
-  return html + `<button class="btn t" data-act="addweek">Add ingredients for the whole week</button><button class="btn o" data-act="clearweek">Clear week</button>`;
+  const total = DAYS.reduce((a,[d])=>a+SLOTS.reduce((b,[s])=>b+planned(d,s).length,0),0);
+  return html + (total?`<button class="btn t" data-act="lview" data-v="shop">See my shopping list</button><button class="btn o" data-act="clearweek">Clear week</button>`:"");
 }
 function Shopping(){
   const ids = Object.keys(S.list);
   const head = `<h1>Shopping list</h1><p class="sub">${ids.length} item${ids.length===1?"":"s"}, priced at ${storeName(S.store)}.</p>${listSeg()}`;
-  if(!ids.length) return head + `<div class="empty"><b>Your list is empty</b>Add meals to your week, then tap Add ingredients.<button class="btn t" data-act="lview" data-v="week">Go to my week</button></div>`;
+  if(!ids.length) return head + `<div class="empty"><b>Your list is empty</b>Add meals to your week and what you need shows up here.<button class="btn t" data-act="lview" data-v="week">Go to my week</button></div>`;
   const totals = STORES.map(s=>({s, t: ids.reduce((a,id)=>a+ITEM[id].price[s.id]*S.list[id],0)}));
   const best = totals.reduce((a,b)=>b.t<a.t?b:a);
   const mine = totals.find(x=>x.s.id===S.store).t;
@@ -742,26 +775,30 @@ function render(top){
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-act]"); if(!b) return;
   const a = b.dataset.act;
-  if(a==="goto") return go(b.dataset.tab);
+  if(a==="goto"){ S.target=null; return go(b.dataset.tab); }
   if(a==="fam"){ S.family=Math.min(12,Math.max(1,S.family+ +b.dataset.d)); }
   if(a==="toggle"){ const id=b.dataset.id; S.pantry = has(id)?S.pantry.filter(x=>x!==id):[...S.pantry,id]; if(has(id)) dropHave(); }
   if(a==="allergy"){ const id=b.dataset.a; S.allergies = S.allergies.includes(id)?S.allergies.filter(x=>x!==id):[...S.allergies,id]; }
   if(a==="noallergy"){ S.allergies=[]; S.asked=true; }
   if(a==="allergydone"){ S.asked=true; if(S.allergies.length) toast("Showing safe meals only"); }
   if(a==="editallergy"){ S.asked=false; save(); return render(true); }
-  if(a==="box"){ let n=0; PANTRY_BOX.forEach(id=>{ if(!has(id)){S.pantry.push(id);n++;} }); dropHave(); toast(n?`Added ${n} pantry box items`:"Already in your pantry"); S.tab="pantry"; save(); return render(true); }
   if(a==="clearpantry"){ S.pantry=[]; toast("Pantry cleared"); }
   if(a==="lview"){ S.lview=b.dataset.v; save(); return render(true); }
-  if(a==="plan"){ const d=b.dataset.d; const w=S.week[d]||[]; const day=DAYS.find(x=>x[0]===d)[2]; if(w.includes(S.meal)){ S.week[d]=w.filter(x=>x!==S.meal); delete S.added[d+":"+S.meal]; toast("Removed from "+day); } else { S.week[d]=[...w,S.meal]; toast("Added to "+day); } }
-  if(a==="addmeal"){ const key=b.dataset.k; if(!S.added[key]){ const r=RECIPES.find(x=>x.id===key.split(":")[1]); const n=addMealToList(r,k()); S.added[key]=true; toast(n?"Added "+n+" item"+(n===1?"":"s")+" to your list":"You have everything for this one"); } }
-  if(a==="addweek"){ let n=0; DAYS.forEach(([d])=>(S.week[d]||[]).forEach(id=>{ const key=d+":"+id; if(!S.added[key]){ const r=RECIPES.find(x=>x.id===id); if(r){ n+=addMealToList(r,k()); S.added[key]=true; } } })); const had=dropHave(); toast(n?"Added what you still need to your list":(had?"Removed "+had+" you already have":"Everything you need is already on your list")); }
-  if(a==="unplan"){ const [d,id]=b.dataset.k.split(":"); S.week[d]=(S.week[d]||[]).filter(x=>x!==id); delete S.added[b.dataset.k]; }
-  if(a==="clearweek"){ S.week={}; S.added={}; toast("Week cleared"); }
+  if(a==="pday"){ S.pday=b.dataset.d; }
+  if(a==="pslot"){ S.pslot=b.dataset.s; }
+  if(a==="addplan"){ const r=RECIPES.find(x=>x.id===S.meal); const d=S.pday, s=S.pslot, key=d+"|"+s+"|"+r.id, where=dayName(d)+" "+slotName(s).toLowerCase();
+    if(planned(d,s).includes(r.id)){ unplanMeal(key); toast("Removed from "+where); }
+    else { const n=planMeal(d,s,r); toast(n?"Added to "+where+". "+n+" item"+(n===1?"":"s")+" on your list":"Added to "+where+". You have it all");
+      if(S.target){ S.target=null; S.meal=null; DSTACK=[]; S.tab="list"; S.lview="week"; save(); return render(true); } } }
+  if(a==="pickfor"){ S.target={d:b.dataset.d,s:b.dataset.s}; S.pday=S.target.d; S.pslot=S.target.s; S.mtype=S.target.s; S.filter="all"; S.tab="meals"; S.meal=null; save(); return render(true); }
+  if(a==="canceltarget"){ S.target=null; S.tab="list"; S.lview="week"; save(); return render(true); }
+  if(a==="unplan"){ unplanMeal(b.dataset.k); toast("Removed"); }
+  if(a==="clearweek"){ Object.keys(S.padd).forEach(removePlanned); S.plan={}; S.padd={}; toast("Week cleared"); }
   if(a==="diet"){ const g=b.dataset.g; S.diets=S.diets.includes(g)?S.diets.filter(x=>x!==g):[...S.diets,g]; if(S.diets.length) S.filter="all"; }
   if(a==="mtype"){ S.mtype=b.dataset.t; if(S.mtype==="holiday") S.filter="all"; }
   if(a==="occ"){ S.occ=b.dataset.o; }
   if(a==="filter"){ S.filter=b.dataset.f; }
-  if(a==="open"){ openDetail(); S.meal=b.dataset.id; save(); return render(true); }
+  if(a==="open"){ openDetail(); S.meal=b.dataset.id; if(!S.target){ const r=RECIPES.find(x=>x.id===S.meal); if(r) S.pslot=slotFor(r); } save(); return render(true); }
   if(a==="sopen"){ openDetail(); S.scratch=b.dataset.id; save(); return render(true); }
   if(a==="back"){ if(history.state&&history.state.detail) return history.back(); return closeDetail(); }
   if(a==="addlist"){
@@ -776,11 +813,19 @@ document.addEventListener("click", e=>{
   if(a==="smade"){ const r=SCRATCH.find(x=>x.id===S.scratch); const i=scratchInfo(r); const used=r.groups.filter(g=>!isBasic(g)&&haveG(g)).map(pick).filter(o=>o.use>=1).map(o=>o.id); S.pantry=S.pantry.filter(id=>!used.includes(id)); if(!has(r.makes)) S.pantry.push(r.makes); S.saved += i.save; toast("You saved "+money(i.save)+"! Added to your pantry"); S.scratch=null; save(); return render(true); }
   if(a==="tick"){ const id=b.dataset.id; S.done = S.done.includes(id)?S.done.filter(x=>x!==id):[...S.done,id]; }
   if(a==="gotit"){ if(!S.done.length) return toast("Check off what you bought"); S.done.forEach(id=>{ if(!has(id)) S.pantry.push(id); delete S.list[id]; delete S.uses[id]; }); toast(`${S.done.length} added to your pantry`); S.done=[]; }
-  if(a==="clearlist"){ S.list={}; S.done=[]; S.uses={}; S.added={}; toast("List cleared"); }
+  if(a==="clearlist"){ S.list={}; S.done=[]; S.uses={}; S.added={}; Object.keys(S.padd).forEach(k=>S.padd[k]=[]); toast("List cleared"); }
   if(a==="setstore"){ S.store=b.dataset.s; toast("Now pricing at "+storeName(S.store)); }
   save(); render();
 });
 
+(function(){
+  S.target=null; S.plan=S.plan||{}; S.padd=S.padd||{};
+  if(!DAYS.some(([d])=>d===S.pday)) S.pday="mon";
+  if(S.week && Object.keys(S.week).length && !Object.keys(S.plan).length){
+    DAYS.forEach(([d])=>(Array.isArray(S.week[d])?S.week[d]:[]).forEach(id=>{ const r=RECIPES.find(x=>x.id===id); if(!r) return; const s=slotFor(r); S.plan[d]=S.plan[d]||{}; S.plan[d][s]=[...(S.plan[d][s]||[]),id]; const key=d+"|"+s+"|"+id; if(S.added[d+":"+id]) S.padd[key]=[]; else addPlanned(d,s,r); }));
+    S.week={}; S.added={}; save();
+  }
+})();
 render(true);
 </script>
 <script>
