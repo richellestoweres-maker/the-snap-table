@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SNAP Table</title>
+<title>Nickel &amp; Dine</title>
 <link rel="icon" href="Fresh%20Groceries%20in%20a%20Paper%20Sack.png">
 <link rel="apple-touch-icon" href="Fresh%20Groceries%20in%20a%20Paper%20Sack.png">
 <meta name="theme-color" content="#3A1520">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="SNAP Table">
+<meta name="apple-mobile-web-app-title" content="Nickel &amp; Dine">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -187,7 +187,7 @@ nav button.on{color:var(--green)}
 .aisle{display:flex;justify-content:space-between;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:18px 2px 6px}
 .aisle span{letter-spacing:0;text-transform:none;font-weight:500}
 
-/* SNAP Table brand */
+/* Nickel and Dine brand */
 :root{--cream:#F8F1E7;--card:#FFFBF5;--ink:#2A1A1D;--soft:#6E5E58;--line:#E6D8C6;--green:#4A1A26;--green-l:#F1E4E2;--tomato:#4A1A26;--tomato-d:#3A1520;--mustard:#B8862E;--mustard-l:#F3E7CF;--red-l:#F6E0DD;--burg:#3D1520}
 html,body{background:#EFE6D9}
 .app{background:var(--cream)}
@@ -254,8 +254,8 @@ nav .badge{background:var(--mustard)}
 <div class="app">
   <header>
     <div class="logo">
-      <img class="logoimg" src="Fresh%20Groceries%20in%20a%20Paper%20Sack.png" alt="SNAP Table logo">
-      <b class="wordmark">SNAP TABLE</b>
+      <img class="logoimg" src="Fresh%20Groceries%20in%20a%20Paper%20Sack.png" alt="Nickel &amp; Dine logo">
+      <b class="wordmark">NICKEL &amp; DINE</b>
     </div>
   </header>
   <main id="screen"></main>
@@ -794,7 +794,7 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => naviga
     const go = document.getElementById("installgo");
     if (go) go.onclick = async () => { b.remove(); if (deferred) { deferred.prompt(); await deferred.userChoice; deferred = null; } };
   }
-  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; show("Add SNAP Table to your home screen.", true); });
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; show("Add Nickel &amp; Dine to your home screen.", true); });
   if (ios) setTimeout(() => show("Add to your home screen: tap Share, then Add to Home Screen.", false), 2500);
 })();
 </script>
