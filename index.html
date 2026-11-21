@@ -248,6 +248,14 @@ nav .badge{background:var(--mustard)}
 .stat b{font-family:Fraunces,serif;color:var(--burg)}
 .back{color:var(--burg)}
 .chip.sm{font-size:13px;padding:6px 12px}
+
+/* Centered layout */
+header{position:relative;justify-content:center;}
+header .logo{flex-direction:column;gap:6px;text-align:center;}
+header .logoimg{width:56px;height:56px;}
+#acctbtn{position:absolute;right:20px;top:calc(18px + env(safe-area-inset-top));}
+main > h1, main > .sub, main > .hint{text-align:center;}
+main > .chips{justify-content:center;}
 </style>
 </head>
 <body>
