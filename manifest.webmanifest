@@ -1,7 +1,7 @@
 {
-  "name": "SNAP Table",
-  "short_name": "SNAP Table",
-  "description": "Low cost meals, pantry and shopping lists for SNAP families.",
+  "name": "Nickel & Dine",
+  "short_name": "Nickel & Dine",
+  "description": "Fine dining on a nickel. Low cost meals, pantry and shopping lists, SNAP friendly.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
