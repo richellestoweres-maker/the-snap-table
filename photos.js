@@ -697,4 +697,13 @@ var PHOTOS = {
   basilchickencutlets: 32383594,
   sourcreamenchiladas: 38648035,
   bbqchickengrilledcheese: 18743145,
+  classicplate: 29839738,
+  sausageplate: 10794158,
+  southernplate: 22430912,
+  strawcrepes: 11653566,
+  nutellacrepes: 39037870,
+  hamcheesecrepes: 29810298,
+  baconeggtacos: 28525193,
+  spinachomelet: 25402355,
+  pbchocpancakes: 28936962,
 };
