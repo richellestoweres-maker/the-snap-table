@@ -706,4 +706,7 @@ var PHOTOS = {
   baconeggtacos: 28525193,
   spinachomelet: 25402355,
   pbchocpancakes: 28936962,
+  pbchipgrits: 7352787,
+  sweetgrits: 4725734,
+  baconcheddargrits: 33074058,
 };
