@@ -1,4 +1,4 @@
-I want /* The SNAP Table data. Prices are Aldi estimates, Houston area, late 2026. Other stores are estimated from these. */
+/* The SNAP Table data. Prices are Aldi estimates, Houston area, late 2026. Other stores are estimated from these. */
 var STORES = [
   {id:"aldi", name:"Aldi"},
   {id:"kroger", name:"Kroger"},
