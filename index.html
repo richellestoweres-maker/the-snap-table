@@ -283,8 +283,8 @@ main > .chips{justify-content:center;}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="photos.js?v=16"></script>
-<script src="data.js?v=241"></script>
+<script src="photos.js?v=17"></script>
+<script src="data.js?v=242"></script>
 <script src="fixes.js?v=8"></script>
 <script>
 /* ---------- SETUP ---------- */
@@ -475,9 +475,11 @@ const BFAST_GROUPS = [
  ["Eggs and omelets","omelet westernomelet spinachomelet masalaomelet mugomelet ketoscramble spinachfetafrittata hamcheesequiche shakshuka rancheros migas chilaquiles chorizoeggs tamagoyaki koreansteamedegg"],
  ["Tacos, burritos and sandwiches","baconeggtacos potatoeggtacos beantacos burritos breakfastquesadillas eggsandwich biscuitsandwiches breakfastsliders kolaches pbbananaroll"],
  ["Casseroles, skillets and hash","bfastcasserole hashbrowncasserole breakfastpizza hamhash sweetpotatohash eggmuffins breakfastfriedrice"],
- ["Grits, oatmeal and bowls","grits raisinoats applecinnamonoatmeal bakedoatmeal oatspb oatspbj oatsapple oatschoc oatsberry overnightchia congee parfait yogurtbowl cottagebowl bananasmoothiebowl strawberryshortcakebowl berrysmoothie"],
+ ["Grits","grits pbchipgrits sweetgrits baconcheddargrits shrimpgrits"],
+ ["Oatmeal and bowls","raisinoats applecinnamonoatmeal bakedoatmeal oatspb oatspbj oatsapple oatschoc oatsberry overnightchia congee parfait yogurtbowl cottagebowl bananasmoothiebowl strawberryshortcakebowl berrysmoothie"],
  ["Muffins and pastries","pancakemuffins bananaoatmuffins pumpkinmuffins blueberrymuffins scones biscuitdonuts cinnamonrolls"]
 ];
+const ALSO_IN = {shrimpgrits:"breakfast"};
 const BFAST_OF = {}; BFAST_GROUPS.forEach(([g,ids],n)=>ids.split(" ").forEach(id=>BFAST_OF[id]=n));
 function mealGroups(rows){
   if(S.mq.trim()) return [["",rows]];
@@ -493,7 +495,7 @@ function Meals(){
   const okList = RECIPES.filter(okMeal);
   const hidden = RECIPES.length - okList.length;
   const mq = S.mq.trim().toLowerCase();
-  let rows = okList.filter(r=>(S.mtype==="all"||(S.mtype==="holiday"?(!!occ(r)&&(S.occ==="all"||occ(r).split(" ").includes(S.occ))):mtype(r)===S.mtype))&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))&&S.diets.every(d=>diet(r,d))).map(r=>({r,i:mealInfo(r)}));
+  let rows = okList.filter(r=>(S.mtype==="all"||(S.mtype==="holiday"?(!!occ(r)&&(S.occ==="all"||occ(r).split(" ").includes(S.occ))):(mtype(r)===S.mtype||ALSO_IN[r.id]===S.mtype)))&&(S.cuisine==="all"||cuisine(r)===S.cuisine)&&(!mq||(r.name+" "+r.d+" "+cuisine(r)).toLowerCase().includes(mq))&&S.diets.every(d=>diet(r,d))).map(r=>({r,i:mealInfo(r)}));
   const counts = {ready:0,close:0};
   rows.forEach(x=>{ if(x.i.status in counts) counts[x.i.status]++; });
   if(S.filter==="fancy") rows = rows.filter(x=>x.r.fancy); else if(S.filter!=="all") rows = rows.filter(x=>x.i.status===S.filter);
